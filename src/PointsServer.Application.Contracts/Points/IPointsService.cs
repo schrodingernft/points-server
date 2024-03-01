@@ -1,0 +1,14 @@
+using System.Threading.Tasks;
+using PointsServer.Points.Dtos;
+using Volo.Abp.Application.Dtos;
+
+namespace PointsServer.Points;
+
+public interface IPointsService
+{
+    Task<PointsRecordResultDto> PointsRecordAsync(PointsRecordInput input);
+    Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input);
+    Task<RankingDetailDto> GetRankingDetailAsync(GetRankingDetailInput input);
+    Task<GetPointsEarnedListDto> GetPointsEarnedListAsync(GetPointsEarnedListInput input);
+    Task<PointsEarnedDetailDto> GetPointsEarnedDetailAsync(GetPointsEarnedDetailInput input);
+}
