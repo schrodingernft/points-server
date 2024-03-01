@@ -104,7 +104,7 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
         } else if (input.Type == SearchType.Operator)
         {
             mustQuery.Add(q => q.Terms(i =>
-                i.Field(f => f.Role).Terms(OperatorRole.Tier2Operator)));
+                i.Field(f => f.Role).Terms(OperatorRole.Kol)));
         }
         
         QueryContainer Filter(QueryContainerDescriptor<OperatorPointSumIndex> f) => f.Bool(b => b.Must(mustQuery));

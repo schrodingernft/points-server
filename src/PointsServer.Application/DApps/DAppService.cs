@@ -64,7 +64,7 @@ public class DAppService : IDAppService
     {
         var roles = Enum.GetValues(typeof(OperatorRole))
             .Cast<OperatorRole>()
-            .Where(role => includePersonal || role != OperatorRole.Personal)
+            .Where(role => includePersonal || role != OperatorRole.User)
             .Select(role => new RoleDto { Role = role.ToString() })
             .ToList();
         return await Task.FromResult(roles);

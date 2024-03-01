@@ -94,7 +94,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
             Address = applyToOperatorInput.Invitee.ToBase58(),
             InviterAddress = userInfo.CaAddressMain,
             Role = applyToOperatorInput.Invitee.ToBase58() == userInfo.CaAddressMain
-                ? OperatorRole.Tier2Operator
+                ? OperatorRole.Kol
                 : OperatorRole.Inviter,
             Status = ApplyStatus.Applying,
             Domain = applyToOperatorInput.Domain,

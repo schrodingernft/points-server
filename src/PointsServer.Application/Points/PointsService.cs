@@ -80,7 +80,7 @@ public class PointsService : IPointsService, ISingletonDependency
         var personalPointRecord = new PointRecordGrainDto
         {
             Address = input.Address,
-            Role = OperatorRole.Personal,
+            Role = OperatorRole.User,
             Domain = input.Domain,
             DappName = input.DappName,
             RecordAction = input.RecordAction,
@@ -97,7 +97,7 @@ public class PointsService : IPointsService, ISingletonDependency
             var operatorPointRecord = new PointRecordGrainDto
             {
                 Address = invitationRelationships.Address,
-                Role = OperatorRole.Tier2Operator,
+                Role = OperatorRole.Kol,
                 Domain = input.Domain,
                 DappName = input.DappName,
                 RecordAction = input.RecordAction,
@@ -163,7 +163,7 @@ public class PointsService : IPointsService, ISingletonDependency
     {
         _logger.LogInformation("GetRankingDetailAsync, req:{req}", JsonConvert.SerializeObject(input));
         var queryInput = _objectMapper.Map<GetRankingDetailInput, GetOperatorPointsActionSumInput>(input);
-        queryInput.Role = OperatorRole.Tier2Operator;
+        queryInput.Role = OperatorRole.Kol;
         var actionRecordPoints = await _pointsProvider.GetOperatorPointsActionSumAsync(queryInput);
 
         var resp = new RankingDetailDto();
@@ -212,7 +212,7 @@ public class PointsService : IPointsService, ISingletonDependency
         {
             var ret = await _pointsProvider.GetOperatorPointsSumIndexListByAddressAsync(queryInput);
 
-            ret.IndexList.ToList().ForEach(index => { totalEarnings += index.Amount; });
+            //ret.IndexList.ToList().ForEach(index => { totalEarnings += index.Amount; });
 
             queryInput.SkipCount += maxResultCount;
             remain = ret.TotalCount - queryInput.SkipCount;
