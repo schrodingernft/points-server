@@ -10,6 +10,10 @@ namespace PointsServer.Worker.Provider;
 public interface IPointsIndexerProvider
 {
     Task<List<PointsSumDto>> GetPointsSumListAsync(long latestExecuteTime, int nowMillisecond);
+
+    Task<List<DomainUserRelationShipDto>>
+        GetDomainUserRelationshipsAsync(DomainUserRelationShipInput relationShipInput);
+    Task<List<string>> GetDomainAppliedListAsync(List<string> domainList);
 }
 
 public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependency
@@ -27,7 +31,7 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
         {
             Query =
                 @"query($startTime:String!,$endTime:Int!){
-                    pointsSumList(input: {startTime:$startTime,endTime:$endTime}){
+                    pointsSumList(relationShipInput: {startTime:$startTime,endTime:$endTime}){
                         id,
                         address,
                         domain,
@@ -46,5 +50,40 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
             }
         });
         return indexerResult.PointsSumList;
+    }
+
+    public async Task<List<DomainUserRelationShipDto>> GetDomainUserRelationshipsAsync(
+        DomainUserRelationShipInput relationShipInput)
+    {
+        var indexerResult = await _graphQlHelper.QueryAsync<DomainUserRelationShipListDto>(new GraphQLRequest
+        {
+            Query =
+                @"query($domains:[String!],$addresses:[String!]){
+                    domainUserRelationShipList(input: {domains:$domains,addresses:$addresses}){
+                        id,
+                        domain,
+                        address,
+                        dappName,
+    					createTime
+                }
+            }",
+            Variables = new
+            {
+                domains = relationShipInput.Domains, addresses = relationShipInput.Addresses
+            }
+        });
+        return indexerResult.DomainUserRelationShipList;
+    }
+
+    public async Task<List<string>> GetDomainAppliedListAsync(List<string> domainList)
+    {
+        return await _graphQlHelper.QueryAsync<List<string>>(new GraphQLRequest
+        {
+            Query =
+                @"query($domainList:[String!]){
+                    checkDomainApplied(input: {domainList:$domainList}){
+                }
+            }"
+        });
     }
 }

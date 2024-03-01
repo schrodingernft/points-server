@@ -7,21 +7,21 @@ using Volo.Abp.Threading;
 
 namespace PointsServer.Worker.Worker;
 
-public class PointsSumWorker : AsyncPeriodicBackgroundWorkerBase
+public class ApplyStatusWorker : AsyncPeriodicBackgroundWorkerBase
 {
-    private readonly IPointsSumService _pointsSumService;
+    private readonly IApplyStatusService _applyStatusService;
     private readonly ILogger<PointsSumWorker> _logger;
 
-    public PointsSumWorker(AbpAsyncTimer timer, IServiceScopeFactory serviceScopeFactory,
-        IPointsSumService pointsSumService, ILogger<PointsSumWorker> logger) : base(timer, serviceScopeFactory)
+    public ApplyStatusWorker(AbpAsyncTimer timer, IServiceScopeFactory serviceScopeFactory,
+        IApplyStatusService applyStatusService, ILogger<PointsSumWorker> logger) : base(timer, serviceScopeFactory)
     {
-        _pointsSumService = pointsSumService;
+        _applyStatusService = applyStatusService;
         _logger = logger;
         Timer.Period = 3 * 1000;
     }
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
     {
-        await _pointsSumService.RecordPointsSumAsync();
+        await _applyStatusService.ApplyStatusChangeAsync();
     }
 }

@@ -17,6 +17,11 @@ public class OperatorDomainProvider : IOperatorDomainProvider, ISingletonDepende
 {
     private readonly INESTRepository<OperatorDomainIndex, string> _repository;
 
+    public OperatorDomainProvider(INESTRepository<OperatorDomainIndex, string> repository)
+    {
+        _repository = repository;
+    }
+
     public async Task<OperatorDomainIndex> GetOperatorDomainIndexAsync(string domain)
     {
         if (string.IsNullOrWhiteSpace(domain))

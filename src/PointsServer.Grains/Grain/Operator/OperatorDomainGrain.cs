@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Orleans;
+using PointsServer.Common;
 using PointsServer.Grains.State.Operator;
 using Volo.Abp.ObjectMapping;
 
@@ -63,5 +64,11 @@ public class OperatorDomainGrain : Grain<OperatorDomainState>, IOperatorDomainGr
             result.Message = e.Message;
             return result;
         }
+    }
+
+    public async Task UpdateApplyStatusAsync(ApplyStatus status)
+    {
+        State.Status = status;
+        await WriteStateAsync();
     }
 }

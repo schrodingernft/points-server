@@ -103,9 +103,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
             ApplyTime = DateTime.Now.Millisecond
         };
 
-        var id = GuidHelper.GenerateId(dto.Address, dto.Domain, dto.DappName);
-
-        var operatorDomainGrain = _clusterClient.GetGrain<IOperatorDomainGrain>(id);
+        var operatorDomainGrain = _clusterClient.GetGrain<IOperatorDomainGrain>(dto.Domain);
         var result =
             await operatorDomainGrain.AddOperatorDomainAsync(dto);
 
@@ -123,6 +121,19 @@ public class ApplyService : PointsPlatformAppService, IApplyService
         {
             TransactionId = transactionOutput.TransactionId
         };
+    }
+
+    public async Task DomainCheckAsync(ApplyCheckInput input)
+    {
+        if (!IsValidDomain(input.Domain))
+        {
+            throw new Exception("invalid domain format");
+        }
+
+        if (await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain) != null)
+        {
+            throw new Exception("this domain already existed");
+        }
     }
 
 

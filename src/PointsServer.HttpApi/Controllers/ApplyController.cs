@@ -32,4 +32,10 @@ public class ApplyController : PointsServerController
     {
         return await _applyService.ApplyConfirmAsync(input);
     }
+
+    [HttpPost("domain/check")]
+    public async Task DomainCheckAsync(ApplyCheckInput input)
+    {
+        await _applyService.DomainCheckAsync(input);
+    }
 }
