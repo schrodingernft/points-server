@@ -6,7 +6,6 @@ namespace PointsServer.Points;
 
 public interface IPointsService
 {
-    Task<PointsRecordResultDto> PointsRecordAsync(PointsRecordInput input);
     Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input);
     Task<RankingDetailDto> GetRankingDetailAsync(GetRankingDetailInput input);
     Task<GetPointsEarnedListDto> GetPointsEarnedListAsync(GetPointsEarnedListInput input);

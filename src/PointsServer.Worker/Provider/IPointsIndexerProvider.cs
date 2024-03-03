@@ -13,6 +13,7 @@ public interface IPointsIndexerProvider
 
     Task<List<DomainUserRelationShipDto>>
         GetDomainUserRelationshipsAsync(DomainUserRelationShipInput relationShipInput);
+
     Task<List<string>> GetDomainAppliedListAsync(List<string> domainList);
 }
 
@@ -83,7 +84,11 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
                 @"query($domainList:[String!]){
                     checkDomainApplied(input: {domainList:$domainList}){
                 }
-            }"
+            }",
+            Variables = new
+            {
+                domainList = domainList
+            }
         });
     }
 }

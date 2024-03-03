@@ -2,131 +2,36 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AElf;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Orleans;
 using PointsServer.Common;
-using PointsServer.Common.AElfSdk;
 using PointsServer.DApps.Provider;
-using PointsServer.Grains.Grain.Points;
-using PointsServer.Options;
 using PointsServer.Points.Dtos;
-using PointsServer.Points.Etos;
 using PointsServer.Points.Provider;
-using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.ObjectMapping;
-using ObjectHelper = PointsServer.Common.ObjectHelper;
 
 namespace PointsServer.Points;
 
 public class PointsService : IPointsService, ISingletonDependency
 {
-    private const string InvitationRelationshipsLockPrefix = "PointsServer:Bound:InvitationRelationshipsLock:";
     private readonly IObjectMapper _objectMapper;
-    private readonly IClusterClient _clusterClient;
-    private readonly IDistributedEventBus _distributedEventBus;
-    private readonly IContractProvider _contractProvider;
-    private readonly IOptionsMonitor<PointsPlatformSecretOption> _pointsPlatformSecretOption;
     private readonly IPointsRulesProvider _pointsRulesProvider;
     private readonly IPointsProvider _pointsProvider;
     private readonly ILogger<PointsService> _logger;
-    private readonly IInvitationRelationshipsProvider _invitationRelationshipsProvider;
     private readonly IOperatorDomainProvider _operatorDomainProvider;
 
 
-    public PointsService(IObjectMapper objectMapper, IClusterClient clusterClient,
-        IDistributedEventBus distributedEventBus, IContractProvider contractProvider,
-        IOptionsMonitor<PointsPlatformSecretOption> pointsPlatformSecretOption,
-        IPointsProvider pointsProvider,
-        IPointsRulesProvider pointsRulesProvider,
-        IInvitationRelationshipsProvider invitationRelationshipsProvider,
-        IOperatorDomainProvider operatorDomainProvider, ILogger<PointsService> logger)
+    public PointsService(IObjectMapper objectMapper, IPointsProvider pointsProvider,
+        IPointsRulesProvider pointsRulesProvider, IOperatorDomainProvider operatorDomainProvider,
+        ILogger<PointsService> logger)
     {
         _objectMapper = objectMapper;
-        _clusterClient = clusterClient;
-        _distributedEventBus = distributedEventBus;
-        _contractProvider = contractProvider;
-        _pointsPlatformSecretOption = pointsPlatformSecretOption;
         _pointsRulesProvider = pointsRulesProvider;
-        _invitationRelationshipsProvider = invitationRelationshipsProvider;
         _pointsProvider = pointsProvider;
         _operatorDomainProvider = operatorDomainProvider;
         _logger = logger;
-    }
-
-    public async Task<PointsRecordResultDto> PointsRecordAsync(PointsRecordInput input)
-    {
-        var sign = GetSign(input);
-
-        if (sign != input.Signature)
-        {
-            throw new UserFriendlyException("Signature is invalid");
-        }
-
-        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, input.RecordAction);
-
-        if (pointsRules == null)
-        {
-            throw new UserFriendlyException("PointsRules is invalid");
-        }
-
-        var batchAddPoints = new List<PointRecordGrainDto>();
-        var nowMillisecond = DateTime.Now.Millisecond;
-        var personalPointRecord = new PointRecordGrainDto
-        {
-            Address = input.Address,
-            Role = OperatorRole.User,
-            Domain = input.Domain,
-            DappName = input.DappName,
-            RecordAction = input.RecordAction,
-            Amount = pointsRules.Amount,
-            PointSymbol = pointsRules.Symbol,
-            RecordTime = nowMillisecond
-        };
-        batchAddPoints.Add(personalPointRecord);
-
-        var invitationRelationships =
-            await _invitationRelationshipsProvider.GetInvitationRelationshipsAsync(input.Address);
-        if (invitationRelationships != null && string.IsNullOrWhiteSpace(invitationRelationships.Address))
-        {
-            var operatorPointRecord = new PointRecordGrainDto
-            {
-                Address = invitationRelationships.Address,
-                Role = OperatorRole.Kol,
-                Domain = input.Domain,
-                DappName = input.DappName,
-                RecordAction = input.RecordAction,
-                Amount = pointsRules.Amount * GetPointsPercentage(pointsRules.PercentageOfTier2Operator),
-                PointSymbol = pointsRules.Symbol,
-                RecordTime = nowMillisecond
-            };
-            batchAddPoints.Add(operatorPointRecord);
-        }
-
-        if (invitationRelationships != null && string.IsNullOrWhiteSpace(invitationRelationships.InviterAddress))
-        {
-            var operatorPointRecord = new PointRecordGrainDto
-            {
-                Address = invitationRelationships.InviterAddress,
-                Role = OperatorRole.Inviter,
-                Domain = input.Domain,
-                DappName = input.DappName,
-                RecordAction = input.RecordAction,
-                Amount = pointsRules.Amount * GetPointsPercentage(pointsRules.PercentageOfInviter),
-                PointSymbol = pointsRules.Symbol,
-                RecordTime = nowMillisecond
-            };
-            batchAddPoints.Add(operatorPointRecord);
-        }
-
-        await BatchAddPointsAsync(batchAddPoints);
-
-        return new PointsRecordResultDto();
     }
 
     public async Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input)
@@ -146,10 +51,19 @@ public class PointsService : IPointsService, ISingletonDependency
         resp.TotalCount = pointsList.TotalCount;
         var items = new List<RankingListDto>();
 
+        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "Register");
+        var pointsPercentage = GetPointsPercentage(pointsRules.PercentageOfTier2Operator);
+        var rate = pointsPercentage * pointsRules.Amount;
+        var formatRate = Convert.ToInt64(Math.Round(rate * (decimal)Math.Pow(10, 8)));
+        var domains = pointsList.IndexList
+            .Select(p => p.Domain).Distinct()
+            .ToList();
+        var kolFollowersCountDic = await _pointsProvider.GetKolFollowersCountDicAsync(domains);
         foreach (var index in pointsList.IndexList)
         {
             var dto = _objectMapper.Map<OperatorPointSumIndex, RankingListDto>(index);
-            dto.FollowersNumber = await _invitationRelationshipsProvider.CountDomainFollowersAsync(index.Domain);
+            dto.FollowersNumber = kolFollowersCountDic[index.Domain];
+            dto.Rate = formatRate;
             items.Add(dto);
         }
 
@@ -173,7 +87,7 @@ public class PointsService : IPointsService, ISingletonDependency
         }
 
         var actionPointList =
-            _objectMapper.Map<List<OperatorPointActionSumIndex>, List<ActionPoints>>(actionRecordPoints.IndexList);
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.IndexList);
         resp.PointDetails = actionPointList;
 
         var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain);
@@ -237,7 +151,7 @@ public class PointsService : IPointsService, ISingletonDependency
         }
 
         var actionPointList =
-            _objectMapper.Map<List<OperatorPointActionSumIndex>, List<ActionPoints>>(actionRecordPoints.IndexList);
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.IndexList);
         resp.PointDetails = actionPointList;
 
         var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain);
@@ -249,30 +163,6 @@ public class PointsService : IPointsService, ISingletonDependency
 
         _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));
         return resp;
-    }
-
-    private async Task BatchAddPointsAsync(List<PointRecordGrainDto> pointRecords)
-    {
-        await Task.WhenAll(pointRecords.Select(AddPointsAsync));
-    }
-
-    private async Task AddPointsAsync(PointRecordGrainDto pointRecordGrain)
-    {
-        var id = GuidHelper.GenerateId(pointRecordGrain.Address, pointRecordGrain.Domain, pointRecordGrain.DappName,
-            pointRecordGrain.RecordAction);
-
-        var operatorPointRecordDetailGrain = _clusterClient.GetGrain<IOperatorPointRecordDetailGrain>(id);
-
-        var result =
-            await operatorPointRecordDetailGrain.PointsRecordAsync(pointRecordGrain);
-
-        if (!result.Success)
-        {
-            throw new UserFriendlyException(result.Message);
-        }
-
-        await _distributedEventBus.PublishAsync(
-            _objectMapper.Map<PointRecordGrainDto, PointRecordEto>(result.Data));
     }
 
     private decimal GetPointsPercentage(string percentageRule)
@@ -294,12 +184,5 @@ public class PointsService : IPointsService, ISingletonDependency
         }
 
         return numerator / denominator;
-    }
-
-    private string GetSign(object obj)
-    {
-        var source = ObjectHelper.ConvertObjectToSortedString(obj, "Signature");
-        source += _pointsPlatformSecretOption.CurrentValue.DappSecret;
-        return HashHelper.ComputeFrom(source).ToHex();
     }
 }

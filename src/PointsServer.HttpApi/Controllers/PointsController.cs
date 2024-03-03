@@ -20,12 +20,6 @@ public class PointsController : PointsServerController
         _pointsService = pointsService;
     }
 
-    [HttpPost("record")]
-    public async Task<PointsRecordResultDto> PointsRecordAsync(PointsRecordInput input)
-    {
-        return await _pointsService.PointsRecordAsync(input);
-    }
-
     [HttpPost("ranking")]
     public async Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input)
     {
