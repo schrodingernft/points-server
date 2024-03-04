@@ -20,22 +20,15 @@ public class DAppController : PointsServerController
         _dAppService = dAppService;
     }
 
-
     [HttpPost]
     public async Task<List<DAppDto>> GetDAppListAsync(GetDAppListInput input)
     {
         return await _dAppService.GetDAppListAsync(input);
     }
-    
+
     [HttpGet("roles")]
     public async Task<List<RoleDto>> GetRolesAsync()
     {
         return await _dAppService.GetRolesAsync();
-    }
-    
-    [HttpPost("invitation/relationships")]
-    public async Task<bool> BoundInvitationRelationshipsAsync(BoundInvitationRelationshipsInput input)
-    {
-        return await _dAppService.BoundInvitationRelationshipsAsync(input);
     }
 }

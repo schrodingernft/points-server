@@ -1,5 +1,5 @@
 using AutoMapper;
-using PointsServer.Samples.Users.Eto;
+using PointsServer.Users.Etos;
 using PointsServer.Users.Index;
 
 namespace PointsServer.ContractEventHandler

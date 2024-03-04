@@ -1,10 +1,10 @@
 {
   "apollo": {
-    "UseApollo" : true,
+    "UseApollo": true,
     "AppId": "PointsServer",
     "MetaServer": "http://192.168.67.7:8080,http://192.168.66.35:8080",
     "Namespaces": [
-      "httpapi_appsettings.json",
+      "silo_appsettings.json",
       "orleans.json",
       "chains.json"
     ]

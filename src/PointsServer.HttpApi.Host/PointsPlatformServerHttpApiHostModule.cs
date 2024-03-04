@@ -18,7 +18,6 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Providers.MongoDB.Configuration;
 using PointsServer.Grains;
-using PointsServer.Middleware;
 using PointsServer.MongoDB;
 using PointsServer.Options;
 using StackExchange.Redis;
@@ -109,7 +108,6 @@ namespace PointsServer
             });
         }
 
-       
 
         private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
         {
@@ -261,8 +259,7 @@ namespace PointsServer
             app.UseSwagger();
             app.UseAbpSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Support APP API"); });
             // }
-            
-            app.UseMiddleware<DeviceInfoMiddleware>();
+
             app.UseAuditing();
             app.UseAbpSerilogEnrichers();
             app.UseUnitOfWork();

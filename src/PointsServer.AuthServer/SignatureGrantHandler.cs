@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using PointsServer.Common;
-using PointsServer.Common.Dto;
+using PointsServer.Dto;
 using PointsServer.Options;
 using PointsServer.Users;
 using PointsServer.Users.Provider;

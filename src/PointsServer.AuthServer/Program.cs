@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PointsServer.Extensions;
 using Serilog;
 using Serilog.Events;
 
@@ -36,12 +37,10 @@ public class Program
         {
             Log.Information("Starting PointsServer.AuthServer.");
             var builder = WebApplication.CreateBuilder(args);
-            builder.Configuration.AddJsonFile("apollosettings.json");
+            builder.Configuration.AddJsonFile("apollo.appsettings.json");
             builder.Host.AddAppSettingsSecretsJson()
                 .UseAutofac()
-                #if !DEBUG
                 .UseApollo()
-                #endif
                 .UseSerilog();
             await builder.AddApplicationAsync<PointsServerAuthServerModule>();
             var app = builder.Build();

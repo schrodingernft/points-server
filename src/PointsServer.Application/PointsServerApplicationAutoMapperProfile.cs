@@ -3,10 +3,8 @@ using PointsServer.DApps.Dtos;
 using PointsServer.Options;
 using PointsServer.Points;
 using PointsServer.Points.Dtos;
-using PointsServer.Samples.Users.Dto;
-using PointsServer.Samples.Users.Eto;
 using PointsServer.Users;
-using PointsServer.Users.Index;
+using PointsServer.Users.Etos;
 
 namespace PointsServer;
 
@@ -14,16 +12,9 @@ public class PointsServerApplicationAutoMapperProfile : Profile
 {
     public PointsServerApplicationAutoMapperProfile()
     {
-        CreateMap<UserSourceInput, UserGrainDto>().ReverseMap();
-        CreateMap<UserGrainDto, UserDto>().ReverseMap();
         CreateMap<UserGrainDto, UserInformationEto>().ReverseMap();
-        CreateMap<UserIndex, UserDto>().ReverseMap();
         CreateMap<DappInfo, DAppDto>().ReverseMap();
-        CreateMap<OperatorPointActionSumIndex, ActionPoints>()
-            .ForMember(destination => destination.Symbol,
-                opt => opt.MapFrom(source => source.PointSymbol));
         CreateMap<GetRankingDetailInput, GetOperatorPointsActionSumInput>();
-        CreateMap<OperatorPointActionSumIndex, ActionPoints>();
         CreateMap<GetRankingListInput, GetOperatorPointsSumIndexListInput>();
         CreateMap<OperatorPointSumIndex, RankingListDto>();
         CreateMap<GetPointsEarnedListInput, GetOperatorPointsSumIndexListByAddressInput>().ForMember(

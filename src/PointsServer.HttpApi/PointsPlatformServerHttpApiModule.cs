@@ -20,7 +20,7 @@ namespace PointsServer;
     typeof(AbpTenantManagementHttpApiModule),
     typeof(AbpFeatureManagementHttpApiModule),
     typeof(AbpSettingManagementHttpApiModule)
-    )]
+)]
 public class PointsServerHttpApiModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
@@ -48,4 +48,3 @@ public class PointsServerHttpApiModule : AbpModule
         });
     }
 }
-

@@ -1,3 +1,5 @@
+using System;
+
 namespace PointsServer.Options;
 
 public class PointsCalculateOptions
@@ -6,7 +8,7 @@ public class PointsCalculateOptions
     public int Period { get; set; } = 600;
     public int UpdateCount { get; set; } = 1000;
     public int OnceFetchCount { get; set; } = 5000;
-    public int ParallelCount { get; set; } = System.Environment.ProcessorCount;
+    public int ParallelCount { get; set; } = Environment.ProcessorCount;
     public int Decimal { get; set; }
     public Coefficient Coefficient { get; set; }
 }

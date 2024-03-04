@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PointsServer.EntityEventHandler.Extensions;
 using Serilog;
 
 namespace PointsServer.EntityEventHandler
@@ -22,7 +23,7 @@ namespace PointsServer.EntityEventHandler
 
             try
             {
-                Log.Information("Starting NFTMarket.EntityEventHandler.");
+                Log.Information("Starting PointsServer.EntityEventHandler.");
                 await CreateHostBuilder(args).RunConsoleAsync();
                 return 0;
             }
@@ -44,6 +45,8 @@ namespace PointsServer.EntityEventHandler
                 {
                     services.AddApplication<PointsServerEntityEventHandlerModule>();
                 })
+                .ConfigureAppConfiguration((h, c) => c.AddJsonFile("apollo.appsettings.json"))
+                .UseApollo()
                 .UseAutofac()
                 .UseSerilog();
     }

@@ -3,7 +3,7 @@ using Volo.Abp.AspNetCore.Mvc;
 
 namespace PointsServer.Controllers;
 
-public class PointsServerController : AbpControllerBase
+public abstract class PointsServerController : AbpControllerBase
 {
     protected PointsServerController()
     {

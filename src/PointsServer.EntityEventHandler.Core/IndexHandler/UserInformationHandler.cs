@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using AElf.Indexing.Elasticsearch;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using PointsServer.Samples.Users.Eto;
+using PointsServer.Users.Etos;
 using PointsServer.Users.Index;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus.Distributed;

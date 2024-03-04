@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PointsServer.Silo;
 using PointsServer.Silo.Extensions;
 using Serilog;
 
-namespace PointsServer;
+namespace PointsServer.Silo;
 
 public class Program
 {
@@ -17,6 +16,7 @@ public class Program
         Log.Logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
             .ReadFrom.Configuration(configuration)
+            .WriteTo.Async(c => c.Console())
             .CreateLogger();
 
         try
@@ -38,10 +38,9 @@ public class Program
 
     internal static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
-            .ConfigureServices((hostcontext, services) =>
-            {
-                services.AddApplication<PointsServerOrleansSiloModule>();
-            })
+            .ConfigureServices((hostcontext, services) => { services.AddApplication<PointsServerOrleansSiloModule>(); })
+            .ConfigureAppConfiguration((h, c) => c.AddJsonFile("apollo.appsettings.json"))
+            .UseApollo()
             .UseOrleansSnapshot()
             .UseAutofac()
             .UseSerilog();
