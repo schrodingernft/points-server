@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PointsServer.Worker.Extensions;
 using Serilog;
 
 namespace PointsServer.Worker
@@ -39,10 +40,9 @@ namespace PointsServer.Worker
 
         internal static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddApplication<PointsServerWorkerModule>();
-                })
+                .ConfigureServices((hostContext, services) => { services.AddApplication<PointsServerWorkerModule>(); })
+                .ConfigureAppConfiguration((h, c) => c.AddJsonFile("apollo.appsettings.json"))
+                .UseApollo()
                 .UseAutofac()
                 .UseSerilog();
     }

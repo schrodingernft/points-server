@@ -10,5 +10,5 @@ public class RankingListDto
    public string ThirdSymbolAmount { get; set; }
    public long FollowersNumber { get; set; }
    public long UpdateTime { get; set; }
-   public long Rate { get; set; }
+   public decimal Rate { get; set; }
 }

@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using PointsServer.DApps;
 using PointsServer.Grains;
+using PointsServer.Options;
 using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
@@ -27,8 +29,11 @@ public class PointsServerApplicationModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<PointsServerApplicationModule>(); });
-        
+
+        var configuration = context.Services.GetConfiguration();
+        context.Services.AddSingleton<IDAppService, DAppService>();
+
+        Configure<DappOption>(configuration.GetSection("Dapp"));
         context.Services.AddHttpClient();
     }
-    
 }

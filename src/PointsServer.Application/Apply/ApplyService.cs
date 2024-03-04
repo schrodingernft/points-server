@@ -96,7 +96,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
         await _distributedEventBus.PublishAsync(
             _objectMapper.Map<OperatorDomainGrainDto, OperatorDomainCreateEto>(result.Data));
 
-        var transactionOutput = await _contractProvider.SendTransactionAsync("", transaction);
+        var transactionOutput = await _contractProvider.SendTransactionAsync(input.ChainId, transaction);
 
         return new ApplyConfirmDto
         {

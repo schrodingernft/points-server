@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PointsServer.DApps;
 using PointsServer.DApps.Dtos;
@@ -21,6 +22,7 @@ public class DAppController : PointsServerController
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<List<DAppDto>> GetDAppListAsync(GetDAppListInput input)
     {
         return await _dAppService.GetDAppListAsync(input);

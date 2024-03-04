@@ -5,6 +5,7 @@ using AutoResponseWrapper;
 using GraphQL.Client.Abstractions;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.DataProtection;
@@ -59,7 +60,7 @@ namespace PointsServer
             Configure<ChainOption>(configuration.GetSection("ChainOption"));
 
             ConfigureConventionalControllers();
-            // ConfigureAuthentication(context, configuration);
+            ConfigureAuthentication(context, configuration);
             ConfigureLocalization();
             ConfigureCache(configuration);
             ConfigureVirtualFileSystem(context);
@@ -108,7 +109,16 @@ namespace PointsServer
             });
         }
 
-
+        private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
+        {
+            context.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = configuration["AuthServer:Authority"];
+                    options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
+                    options.Audience = "PointsServer";
+                });
+        }
         private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
         {
             context.Services.AddAbpSwaggerGen(options =>

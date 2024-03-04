@@ -25,7 +25,7 @@ public class ApplyStatusService : IApplyStatusService, ISingletonDependency
     {
         var applyingList = await _applyStatusProvider.GetApplyingListAsync();
         var applyingDomains = applyingList.Select(i => i.Domain).ToList();
-        var domainAppliedList= await _pointsIndexerProvider.GetDomainAppliedListAsync(applyingDomains);
+        var domainAppliedList = await _pointsIndexerProvider.GetDomainAppliedListAsync(applyingDomains);
         await _applyStatusProvider.BatchUpdateApplyStatusAsync(domainAppliedList);
     }
 }

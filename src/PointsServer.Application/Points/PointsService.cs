@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,9 +51,6 @@ public class PointsService : IPointsService, ISingletonDependency
         var items = new List<RankingListDto>();
 
         var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "Register");
-        var pointsPercentage = GetPointsPercentage(pointsRules.PercentageOfTier2Operator);
-        var rate = pointsPercentage * pointsRules.Amount;
-        var formatRate = Convert.ToInt64(Math.Round(rate * (decimal)Math.Pow(10, 8)));
         var domains = pointsList.IndexList
             .Select(p => p.Domain).Distinct()
             .ToList();
@@ -63,7 +59,7 @@ public class PointsService : IPointsService, ISingletonDependency
         {
             var dto = _objectMapper.Map<OperatorPointSumIndex, RankingListDto>(index);
             dto.FollowersNumber = kolFollowersCountDic[index.Domain];
-            dto.Rate = formatRate;
+            dto.Rate = pointsRules.KolAmount;
             items.Add(dto);
         }
 
@@ -163,26 +159,5 @@ public class PointsService : IPointsService, ISingletonDependency
 
         _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));
         return resp;
-    }
-
-    private decimal GetPointsPercentage(string percentageRule)
-    {
-        var parts = percentageRule.Split(':');
-        if (parts.Length != 2)
-        {
-            throw new ArgumentException("The percentageRule format is incorrect.");
-        }
-
-
-        var numerator = decimal.Parse(parts[0]);
-        var denominator = decimal.Parse(parts[1]);
-
-
-        if (denominator == 0)
-        {
-            throw new DivideByZeroException("The denominator cannot be zero.");
-        }
-
-        return numerator / denominator;
     }
 }

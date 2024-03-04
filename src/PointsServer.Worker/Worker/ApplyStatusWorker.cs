@@ -17,7 +17,7 @@ public class ApplyStatusWorker : AsyncPeriodicBackgroundWorkerBase
     {
         _applyStatusService = applyStatusService;
         _logger = logger;
-        Timer.Period = 3 * 1000;
+        Timer.Period = 1000;
     }
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
