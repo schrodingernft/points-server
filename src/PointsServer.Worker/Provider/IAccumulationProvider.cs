@@ -2,28 +2,36 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AElf.Indexing.Elasticsearch;
-using PointsServer.Operator;
+using PointsServer.Points;
 using Volo.Abp.DependencyInjection;
 
 namespace PointsServer.Worker.Provider;
 
 public interface IAccumulationProvider
 {
-    Task<List<OperatorDomainIndex>> GetOperatorDomainListAsync(int skipCount, int maxResultCount);
+    Task<List<OperatorPointSumIndex>> GetOperatorPointSumListAsync(int skipCount, int maxResultCount);
+    Task UpdateOperatorPointSumAsync(List<OperatorPointSumIndex> operatorPointSumList);
 }
 
 public class AccumulationProvider : IAccumulationProvider, ISingletonDependency
 {
-    private readonly INESTRepository<OperatorDomainIndex, string> _operatorDomainRepository;
+    private readonly INESTRepository<OperatorPointSumIndex, string> _operatorPointSumRepository;
 
-    public AccumulationProvider(INESTRepository<OperatorDomainIndex, string> operatorDomainRepository)
+    public AccumulationProvider(INESTRepository<OperatorPointSumIndex, string> operatorPointSumRepository)
     {
-        _operatorDomainRepository = operatorDomainRepository;
+        _operatorPointSumRepository = operatorPointSumRepository;
     }
 
-    public async Task<List<OperatorDomainIndex>> GetOperatorDomainListAsync(int skipCount, int maxResultCount)
+    public async Task<List<OperatorPointSumIndex>> GetOperatorPointSumListAsync(int skipCount, int maxResultCount)
     {
-        var (totalCount, data) = await _operatorDomainRepository.GetListAsync(skip: skipCount, limit: maxResultCount);
+        var (totalCount, data) =
+            await _operatorPointSumRepository.GetListAsync(skip: skipCount, limit: maxResultCount);
+
         return data;
+    }
+    
+    public async Task UpdateOperatorPointSumAsync(List<OperatorPointSumIndex> operatorPointSumList)
+    {
+        await _operatorPointSumRepository.BulkAddOrUpdateAsync(operatorPointSumList);
     }
 }
