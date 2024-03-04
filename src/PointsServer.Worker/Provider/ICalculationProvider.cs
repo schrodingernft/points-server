@@ -7,17 +7,17 @@ using Volo.Abp.DependencyInjection;
 
 namespace PointsServer.Worker.Provider;
 
-public interface IAccumulationProvider
+public interface ICalculationProvider
 {
     Task<List<OperatorPointSumIndex>> GetOperatorPointSumListAsync(int skipCount, int maxResultCount);
     Task UpdateOperatorPointSumAsync(List<OperatorPointSumIndex> operatorPointSumList);
 }
 
-public class AccumulationProvider : IAccumulationProvider, ISingletonDependency
+public class CalculationProvider : ICalculationProvider, ISingletonDependency
 {
     private readonly INESTRepository<OperatorPointSumIndex, string> _operatorPointSumRepository;
 
-    public AccumulationProvider(INESTRepository<OperatorPointSumIndex, string> operatorPointSumRepository)
+    public CalculationProvider(INESTRepository<OperatorPointSumIndex, string> operatorPointSumRepository)
     {
         _operatorPointSumRepository = operatorPointSumRepository;
     }

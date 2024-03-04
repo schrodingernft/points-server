@@ -12,23 +12,23 @@ using Volo.Abp.DependencyInjection;
 
 namespace PointsServer.Worker.Services;
 
-public interface IAccumulationService
+public interface ICalculationService
 {
     Task CalculateAsync();
 }
 
-public class AccumulationService : IAccumulationService, ISingletonDependency
+public class CalculationService : ICalculationService, ISingletonDependency
 {
-    private readonly ILogger<AccumulationService> _logger;
-    private readonly IAccumulationProvider _accumulationProvider;
+    private readonly ILogger<CalculationService> _logger;
+    private readonly ICalculationProvider _calculationProvider;
     private readonly PointsCalculateOptions _options;
     private List<OperatorPointSumIndex> _allOperatorPointSumIndices = new();
 
-    public AccumulationService(ILogger<AccumulationService> logger, IAccumulationProvider accumulationProvider,
+    public CalculationService(ILogger<CalculationService> logger, ICalculationProvider calculationProvider,
         IOptionsSnapshot<PointsCalculateOptions> options)
     {
         _logger = logger;
-        _accumulationProvider = accumulationProvider;
+        _calculationProvider = calculationProvider;
         _options = options.Value;
     }
 
@@ -148,7 +148,7 @@ public class AccumulationService : IAccumulationService, ISingletonDependency
         int skipCount, int maxResultCount)
     {
         var operatorPointSum =
-            await _accumulationProvider.GetOperatorPointSumListAsync(skipCount, maxResultCount);
+            await _calculationProvider.GetOperatorPointSumListAsync(skipCount, maxResultCount);
         operatorPointSumIndices.AddRange(operatorPointSum);
 
         if (operatorPointSum.Count < maxResultCount)
@@ -168,7 +168,7 @@ public class AccumulationService : IAccumulationService, ISingletonDependency
 
         while (!indices.IsNullOrEmpty())
         {
-            await _accumulationProvider.UpdateOperatorPointSumAsync(indices);
+            await _calculationProvider.UpdateOperatorPointSumAsync(indices);
 
             skipCount += _options.UpdateCount;
             indices = _allOperatorPointSumIndices.Skip(skipCount).Take(_options.UpdateCount).ToList();

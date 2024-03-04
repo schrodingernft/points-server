@@ -10,16 +10,16 @@ using Volo.Abp.Threading;
 
 namespace PointsServer.Worker.Worker;
 
-public class AccumulationWorker : AsyncPeriodicBackgroundWorkerBase
+public class CalculationWorker : AsyncPeriodicBackgroundWorkerBase
 {
-    private readonly ILogger<AccumulationWorker> _logger;
-    private readonly IAccumulationService _accumulationService;
+    private readonly ILogger<CalculationWorker> _logger;
+    private readonly ICalculationService _calculationService;
 
-    public AccumulationWorker(AbpAsyncTimer timer, IServiceScopeFactory serviceScopeFactory,
-        ILogger<AccumulationWorker> logger, IAccumulationService accumulationService,IOptionsSnapshot<PointsCalculateOptions> options) : base(timer, serviceScopeFactory)
+    public CalculationWorker(AbpAsyncTimer timer, IServiceScopeFactory serviceScopeFactory,
+        ILogger<CalculationWorker> logger, ICalculationService calculationService,IOptionsSnapshot<PointsCalculateOptions> options) : base(timer, serviceScopeFactory)
     {
         _logger = logger;
-        _accumulationService = accumulationService;
+        _calculationService = calculationService;
         Timer.Period = options.Value.Period * 1000;
     }
 
@@ -28,6 +28,6 @@ public class AccumulationWorker : AsyncPeriodicBackgroundWorkerBase
         _logger.LogInformation(
             "begin to accumulation, time: {time}", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
 
-        await _accumulationService.CalculateAsync();
+        await _calculationService.CalculateAsync();
     }
 }

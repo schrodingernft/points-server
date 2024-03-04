@@ -30,7 +30,7 @@ public class PointsServerWorkerModule : AbpModule
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
-        context.AddBackgroundWorkerAsync<AccumulationWorker>();
+        context.AddBackgroundWorkerAsync<CalculationWorker>();
         //context.AddBackgroundWorkerAsync<PointsSettlementWorker>();
     }
 }
