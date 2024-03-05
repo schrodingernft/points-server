@@ -50,7 +50,7 @@ public class PointsService : IPointsService, ISingletonDependency
         resp.TotalCount = pointsList.TotalCount;
         var items = new List<RankingListDto>();
 
-        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "Register");
+        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "RegisterIncrement");
         var domains = pointsList.IndexList
             .Select(p => p.Domain).Distinct()
             .ToList();

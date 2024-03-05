@@ -26,7 +26,7 @@ public class PointsRulesProvider : IPointsRulesProvider, ISingletonDependency
     public async Task<Dictionary<string, Dictionary<string, PointsRules>>> GetAllPointsRulesAsync()
     {
         return _pointsRulesOption.CurrentValue.PointsRulesList
-            .GroupBy(rule => rule.DappName)
+            .GroupBy(rule => rule.DappId)
             .ToDictionary(
                 group => group.Key,
                 group => group.ToDictionary(
@@ -38,7 +38,8 @@ public class PointsRulesProvider : IPointsRulesProvider, ISingletonDependency
 
     public async Task<PointsRules> GetPointsRulesAsync(string dappName, string action)
     {
-        if (!GetAllPointsRulesAsync().Result.TryGetValue(dappName, out var actionPointsRulesDic))
+        var allPointsRulesDic = await GetAllPointsRulesAsync();
+        if (!allPointsRulesDic.TryGetValue(dappName, out var actionPointsRulesDic))
         {
             throw new Exception("invalid dappName points rules");
         }

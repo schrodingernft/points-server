@@ -34,6 +34,7 @@ public class PointsServerApplicationModule : AbpModule
         context.Services.AddSingleton<IDAppService, DAppService>();
 
         Configure<DappOption>(configuration.GetSection("Dapp"));
+        Configure<PointsRulesOption>(configuration.GetSection("PointsRules"));
         context.Services.AddHttpClient();
     }
 }

@@ -107,24 +107,29 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
 
     public async Task<Dictionary<string, long>> GetKolFollowersCountDicAsync(List<string> domainList)
     {
-        var indexerResult = await _graphQlHelper.QueryAsync<DomainUserRelationShipIndexerListDto>(new GraphQLRequest
+        var indexerResult = await _graphQlHelper.QueryAsync<DomainUserRelationShipIndexerQuery>(new GraphQLRequest
         {
             Query =
-                @"query($domains:[String!]){
-                    domainUserRelationShipList(input: {domains:$domains,addresses:$addresses}){
-                        id,
-                        domain,
-                        address,
-                        dappName,
-    					createTime
+                @"query($domainIn:[String!]!,$addressIn:[String!]!,$dappNameIn:[String!]!,$skipCount:Int!,$maxResultCount:Int!){
+                    queryUserAsync(input: {domainIn:$domainIn,addressIn:$addressIn,dappNameIn:$dappNameIn,skipCount:$skipCount,maxResultCount:$maxResultCount}){
+                        totalRecordCount
+                        data {
+                          id
+                          domain
+                          address
+                          dappName
+                          createTime
+                        }
                 }
             }",
             Variables = new
             {
-                domains = domainList
+                domainIn = domainList, addressIn = new List<string>(), dappNameIn = new List<string>(), skipCount = 0,
+                maxResultCount = 1000
             }
         });
-        var result = indexerResult.DomainUserRelationShipList;
+
+        var result = indexerResult.QueryUserAsync.Data;
         if (result.IsNullOrEmpty())
         {
             return new Dictionary<string, long>();

@@ -82,11 +82,19 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
                 case OperatorRole.User when relationshipFlag:
                     //set Kol and Inviter address
                     operatorPointSumIndex.KolAddress = operatorDomain.Address;
-                    operatorPointSumIndex.InviterAddress = operatorDomain.InviterAddress;
+                    if (operatorDomain.Role == OperatorRole.Inviter)
+                    {
+                        operatorPointSumIndex.InviterAddress = operatorDomain.InviterAddress;
+                    }
+
                     break;
                 case OperatorRole.Kol when relationshipFlag:
                     //set Inviter address
-                    operatorPointSumIndex.InviterAddress = operatorDomain.InviterAddress;
+                    if (operatorDomain.Role == OperatorRole.Inviter)
+                    {
+                        operatorPointSumIndex.InviterAddress = operatorDomain.InviterAddress;
+                    }
+
                     break;
             }
 
