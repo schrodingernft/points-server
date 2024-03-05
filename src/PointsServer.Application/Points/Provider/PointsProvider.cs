@@ -40,27 +40,22 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
     public async Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListAsync(
         GetOperatorPointsSumIndexListInput input)
     {
-        var shouldQuery1 = new List<Func<QueryContainerDescriptor<OperatorPointSumIndex>, QueryContainer>>();
-        var shouldQuery2 = new List<Func<QueryContainerDescriptor<OperatorPointSumIndex>, QueryContainer>>();
+        var mustQuery = new List<Func<QueryContainerDescriptor<OperatorPointSumIndex>, QueryContainer>>();
 
         if (!input.Keyword.IsNullOrWhiteSpace())
         {
-            shouldQuery1.Add(q => q.Terms(i =>
-                i.Field(f => f.Domain).Terms(input.Keyword)));
-            shouldQuery2.Add(q => q.Terms(i =>
-                i.Field(f => f.Address).Terms(input.Keyword)));
+            var shouldQuery = new List<Func<QueryContainerDescriptor<OperatorPointSumIndex>, QueryContainer>>();
+            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Domain).Value(input.Keyword)));
+            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Address).Value(input.Keyword)));
+            mustQuery.Add(q => q.Bool(b => b.Should(shouldQuery)));
         }
 
-        var mustQuery = new List<Func<QueryContainerDescriptor<OperatorPointSumIndex>, QueryContainer>>();
         mustQuery.Add(q => q.Terms(i =>
             i.Field(f => f.DappName).Terms(input.DappName)));
+        mustQuery.Add(q => q.Terms(i =>
+            i.Field(f => f.Role).Terms(OperatorRole.Kol)));
 
-        QueryContainer Filter(QueryContainerDescriptor<OperatorPointSumIndex> f)
-            => f.Bool(b =>
-                b.MinimumShouldMatch(1)
-                    .Should(shouldQuery1)
-                    .Should(shouldQuery2)
-            );
+        QueryContainer Filter(QueryContainerDescriptor<OperatorPointSumIndex> f) => f.Bool(b => b.Must(mustQuery));
 
         var sortType = input.Sorting == "DESC" ? SortOrder.Descending : SortOrder.Ascending;
         var result = await _pointsSumIndexRepository.GetListAsync(Filter, sortType: sortType,
@@ -84,20 +79,28 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
 
         if (input.Type == SearchType.Inviter)
         {
-            mustQuery.Add(q => q.Terms(i =>
-                i.Field(f => f.Role).Terms(OperatorRole.Inviter)));
+            mustQuery.Add(q => q.Term(i =>
+                i.Field(f => f.Role).Value(OperatorRole.Inviter)));
         }
         else if (input.Type == SearchType.Operator)
         {
-            mustQuery.Add(q => q.Terms(i =>
-                i.Field(f => f.Role).Terms(OperatorRole.Kol)));
+            mustQuery.Add(q => q.Term(i =>
+                i.Field(f => f.Role).Value(OperatorRole.Kol)));
+        }
+        else
+        {
+            var shouldQuery = new List<Func<QueryContainerDescriptor<OperatorPointSumIndex>, QueryContainer>>();
+            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Role).Value(OperatorRole.Kol)));
+            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Role).Value(OperatorRole.Inviter)));
+            mustQuery.Add(q => q.Bool(b => b.Should(shouldQuery)));
         }
 
         QueryContainer Filter(QueryContainerDescriptor<OperatorPointSumIndex> f) => f.Bool(b => b.Must(mustQuery));
 
-
         var sortType = input.Sorting == "DESC" ? SortOrder.Descending : SortOrder.Ascending;
-        var result = await _pointsSumIndexRepository.GetListAsync(Filter, sortType: sortType);
+        var result = await _pointsSumIndexRepository.GetListAsync(Filter, sortType: sortType,
+            sortExp: GetSortBy(input.SortingKeyWord), skip: input.SkipCount, limit: input.MaxResultCount);
+
         return new OperatorPointSumIndexList
         {
             TotalCount = result.Item1,
@@ -143,25 +146,35 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
     public async Task<RankingDetailIndexerListDto> GetOperatorPointsActionSumAsync(
         GetOperatorPointsActionSumInput queryInput)
     {
-        var indexerResult = await _graphQlHelper.QueryAsync<RankingDetailIndexerListDto>(new GraphQLRequest
+        var indexerResult = await _graphQlHelper.QueryAsync<RankingDetailIndexerQueryDto>(new GraphQLRequest
         {
             Query =
-                @"query($domains:[String!]){
-                    domainUserRelationShipList(input: {domains:$domains,addresses:$addresses}){
+                @"query($dappId:String!, $address:String!, $domain:String!, $role:IncomeSourceType){
+                    getPointsSumByAction(input: {dappId:$dappId,address:$address,domain:$domain,role:$role}){
+                        totalRecordCount,
+                        data{
                         id,
-                        domain,
                         address,
-                        dappName,
-    					createTime
+                        domain,
+                        role,
+                        dappId,
+    					pointsName,
+    					actionName,
+    					amount,
+    					symbolName,
+    					createTime,
+    					updateTime
+                    }
                 }
             }",
             Variables = new
             {
-                domains = ""
+                dappId = queryInput.DappName, address = queryInput.Address, domain = queryInput.Domain,
+                role = queryInput.Role
             }
         });
 
-        return indexerResult;
+        return indexerResult.GetPointsSumByAction;
     }
 
     private Expression<Func<OperatorPointSumIndex, object>> GetSortBy(SortingKeywordType sortingKeyWord)

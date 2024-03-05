@@ -22,7 +22,6 @@ public class DAppController : PointsServerController
     }
 
     [HttpPost]
-    [Authorize]
     public async Task<List<DAppDto>> GetDAppListAsync(GetDAppListInput input)
     {
         return await _dAppService.GetDAppListAsync(input);

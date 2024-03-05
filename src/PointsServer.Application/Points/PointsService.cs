@@ -77,13 +77,13 @@ public class PointsService : IPointsService, ISingletonDependency
         var actionRecordPoints = await _pointsProvider.GetOperatorPointsActionSumAsync(queryInput);
 
         var resp = new RankingDetailDto();
-        if (actionRecordPoints.TotalCount == 0)
+        if (actionRecordPoints.TotalRecordCount == 0)
         {
             return resp;
         }
 
         var actionPointList =
-            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.IndexList);
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data);
         resp.PointDetails = actionPointList;
 
         var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain);
@@ -91,6 +91,8 @@ public class PointsService : IPointsService, ISingletonDependency
         {
             resp.Describe = domainInfo.Descibe;
             resp.Icon = domainInfo.Icon;
+            resp.DappName = domainInfo.DappName;
+            resp.Domain = domainInfo.Domain;
         }
 
         _logger.LogInformation("GetRankingDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));
@@ -141,13 +143,13 @@ public class PointsService : IPointsService, ISingletonDependency
         var actionRecordPoints = await _pointsProvider.GetOperatorPointsActionSumAsync(queryInput);
 
         var resp = new PointsEarnedDetailDto();
-        if (actionRecordPoints.TotalCount == 0)
+        if (actionRecordPoints.TotalRecordCount == 0)
         {
             return resp;
         }
 
         var actionPointList =
-            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.IndexList);
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data);
         resp.PointDetails = actionPointList;
 
         var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain);
@@ -155,6 +157,8 @@ public class PointsService : IPointsService, ISingletonDependency
         {
             resp.Describe = domainInfo.Descibe;
             resp.Icon = domainInfo.Icon;
+            resp.DappName = domainInfo.DappName;
+            resp.Domain = domainInfo.Domain;
         }
 
         _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));

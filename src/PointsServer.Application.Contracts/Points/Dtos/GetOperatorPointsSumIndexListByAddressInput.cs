@@ -11,4 +11,5 @@ public class GetOperatorPointsSumIndexListByAddressInput : PagedAndSortedResultR
     public string DappName { get; set; }
 
     public SearchType Type { get; set; }
+    public SortingKeywordType SortingKeyWord { get; set; }
 }

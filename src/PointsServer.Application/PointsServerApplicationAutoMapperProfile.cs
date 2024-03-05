@@ -5,6 +5,7 @@ using PointsServer.Grains.Grain.Operator;
 using PointsServer.Options;
 using PointsServer.Points;
 using PointsServer.Points.Dtos;
+using PointsServer.Points.Provider;
 using PointsServer.Users;
 using PointsServer.Users.Etos;
 
@@ -25,5 +26,10 @@ public class PointsServerApplicationAutoMapperProfile : Profile
             opt => opt.MapFrom(source => source.Role));
         CreateMap<OperatorPointSumIndex, PointsEarnedListDto>();
         CreateMap<GetPointsEarnedDetailInput, GetOperatorPointsActionSumInput>();
+        CreateMap<RankingDetailIndexerDto, ActionPoints>()
+            .ForMember(t => t.Action, m => m.MapFrom(f => f.ActionName))
+            .ForMember(t => t.Symbol, m => m.MapFrom(f => f.SymbolName))
+            .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount))
+            ;
     }
 }

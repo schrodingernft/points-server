@@ -1,13 +1,32 @@
+using System;
 using System.Collections.Generic;
+using PointsServer.Common;
 
 namespace PointsServer.Points.Provider;
 
+public class RankingDetailIndexerQueryDto
+{
+    public RankingDetailIndexerListDto GetPointsSumByAction { get; set; }
+}
+
 public class RankingDetailIndexerListDto
 {
-    public List<RankingDetailIndexerDto> IndexList { get; set; }
-    public long TotalCount { get; set; }
+    public List<RankingDetailIndexerDto> Data { get; set; }
+    public long TotalRecordCount { get; set; }
 }
 
 public class RankingDetailIndexerDto
 {
+    public string Id { get; set; }
+    public string Address { get; set; }
+    public string Domain { get; set; }
+    public OperatorRole Role { get; set; }
+    public string DappId { get; set; }
+    public string PointsName { get; set; }
+    public string ActionName { get; set; }
+    public decimal Amount { get; set; }
+    public string SymbolName { get; set; }
+
+    public DateTime CreateTime { get; set; }
+    public DateTime UpdateTime { get; set; }
 }
