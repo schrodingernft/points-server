@@ -121,6 +121,7 @@ public class PointsService : IPointsService, ISingletonDependency
         {
             var pointsEarnedListDto = _objectMapper.Map<OperatorPointSumIndex, PointsEarnedListDto>(operatorPointSumIndex);
             pointsEarnedListDto.DappName = GetDappDto(operatorPointSumIndex.DappName).DappName;
+            pointsEarnedListDto.Icon = GetDappDto(operatorPointSumIndex.DappName).Icon;
             items.Add(pointsEarnedListDto);
         }
 
