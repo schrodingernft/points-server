@@ -49,10 +49,6 @@ public class ApplyService : PointsPlatformAppService, IApplyService
     public async Task<ApplyCheckResultDto> ApplyCheckAsync(ApplyCheckInput input)
     {
         var result = new ApplyCheckResultDto();
-        if (!IsValidDomain(input.Domain))
-        {
-            result.DomainCheck = "invalid domain format";
-        }
 
         if (await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain) != null)
         {
@@ -132,8 +128,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
     public async Task<DomainCheckDto> DomainCheckAsync(ApplyCheckInput input)
     {
         var domainCheckDto = new DomainCheckDto();
-        if (IsValidDomain(input.Domain) &&
-            await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain) != null)
+        if (await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain) != null)
         {
             domainCheckDto.Exists = true;
         }
@@ -141,10 +136,5 @@ public class ApplyService : PointsPlatformAppService, IApplyService
         return domainCheckDto;
     }
 
-
-    private bool IsValidDomain(string domain)
-    {
-        var pattern = @"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$";
-        return Regex.IsMatch(domain, pattern);
-    }
+    
 }
