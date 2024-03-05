@@ -34,8 +34,8 @@ public class ApplyController : PointsServerController
     }
 
     [HttpPost("domain/check")]
-    public async Task DomainCheckAsync(ApplyCheckInput input)
+    public async Task<DomainCheckDto> DomainCheckAsync(ApplyCheckInput input)
     {
-        await _applyService.DomainCheckAsync(input);
+        return await _applyService.DomainCheckAsync(input);
     }
 }

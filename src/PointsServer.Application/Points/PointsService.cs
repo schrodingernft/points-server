@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PointsServer.Common;
+using PointsServer.DApps;
+using PointsServer.DApps.Dtos;
 using PointsServer.DApps.Provider;
 using PointsServer.Points.Dtos;
 using PointsServer.Points.Provider;
@@ -20,17 +22,18 @@ public class PointsService : IPointsService, ISingletonDependency
     private readonly IPointsProvider _pointsProvider;
     private readonly ILogger<PointsService> _logger;
     private readonly IOperatorDomainProvider _operatorDomainProvider;
-
+    private readonly IDAppService _dAppService;
 
     public PointsService(IObjectMapper objectMapper, IPointsProvider pointsProvider,
         IPointsRulesProvider pointsRulesProvider, IOperatorDomainProvider operatorDomainProvider,
-        ILogger<PointsService> logger)
+        ILogger<PointsService> logger, IDAppService dAppService)
     {
         _objectMapper = objectMapper;
         _pointsRulesProvider = pointsRulesProvider;
         _pointsProvider = pointsProvider;
         _operatorDomainProvider = operatorDomainProvider;
         _logger = logger;
+        _dAppService = dAppService;
     }
 
     public async Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input)
@@ -90,8 +93,8 @@ public class PointsService : IPointsService, ISingletonDependency
         if (domainInfo != null)
         {
             resp.Describe = domainInfo.Descibe;
-            resp.Icon = domainInfo.Icon;
-            resp.DappName = domainInfo.DappName;
+            resp.Icon = GetDappDto(domainInfo.DappName).Icon;
+            resp.DappName = GetDappDto(domainInfo.DappName).DappName;
             resp.Domain = domainInfo.Domain;
         }
 
@@ -113,7 +116,15 @@ public class PointsService : IPointsService, ISingletonDependency
         }
 
         resp.TotalCount = pointsList.TotalCount;
-        resp.Items = _objectMapper.Map<List<OperatorPointSumIndex>, List<PointsEarnedListDto>>(pointsList.IndexList);
+        var items = new List<PointsEarnedListDto>();
+        foreach (var operatorPointSumIndex in pointsList.IndexList)
+        {
+            var pointsEarnedListDto = _objectMapper.Map<OperatorPointSumIndex, PointsEarnedListDto>(operatorPointSumIndex);
+            pointsEarnedListDto.DappName = GetDappDto(operatorPointSumIndex.DappName).DappName;
+            items.Add(pointsEarnedListDto);
+        }
+
+        resp.Items = items;
 
 
         decimal totalEarnings = 0;
@@ -156,12 +167,18 @@ public class PointsService : IPointsService, ISingletonDependency
         if (domainInfo != null)
         {
             resp.Describe = domainInfo.Descibe;
-            resp.Icon = domainInfo.Icon;
-            resp.DappName = domainInfo.DappName;
+            resp.Icon = GetDappDto(domainInfo.DappName).Icon;
+            resp.DappName = GetDappDto(domainInfo.DappName).DappName;
             resp.Domain = domainInfo.Domain;
         }
 
         _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));
         return resp;
+    }
+
+    private DAppDto GetDappDto(string dappId)
+    {
+        var dappIdDic = _dAppService.GetDappIdDic();
+        return dappIdDic[dappId];
     }
 }

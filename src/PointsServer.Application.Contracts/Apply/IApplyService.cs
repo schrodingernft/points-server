@@ -7,5 +7,5 @@ public interface IApplyService
 {
     Task<ApplyCheckResultDto> ApplyCheckAsync(ApplyCheckInput input);
     Task<ApplyConfirmDto> ApplyConfirmAsync(ApplyConfirmInput input);
-    Task DomainCheckAsync(ApplyCheckInput input);
+    Task<DomainCheckDto> DomainCheckAsync(ApplyCheckInput input);
 }

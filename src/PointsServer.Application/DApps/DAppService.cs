@@ -43,4 +43,10 @@ public class DAppService : IDAppService
             .ToList();
         return await Task.FromResult(roles);
     }
+
+    public Dictionary<string, DAppDto> GetDappIdDic()
+    {
+        return _dAppOption.CurrentValue.DappInfos
+            .ToDictionary(dApp => dApp.DappId, dApp => _objectMapper.Map<DappInfo, DAppDto>(dApp));
+    }
 }

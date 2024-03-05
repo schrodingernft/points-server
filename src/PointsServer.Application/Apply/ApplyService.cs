@@ -104,17 +104,15 @@ public class ApplyService : PointsPlatformAppService, IApplyService
         };
     }
 
-    public async Task DomainCheckAsync(ApplyCheckInput input)
+    public async Task<DomainCheckDto> DomainCheckAsync(ApplyCheckInput input)
     {
-        if (!IsValidDomain(input.Domain))
+        var domainCheckDto = new DomainCheckDto();
+        if (IsValidDomain(input.Domain) && await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain) != null)
         {
-            throw new Exception("invalid domain format");
+            domainCheckDto.Exists = true;
         }
 
-        if (await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain) != null)
-        {
-            throw new Exception("this domain already existed");
-        }
+        return domainCheckDto;
     }
 
 
