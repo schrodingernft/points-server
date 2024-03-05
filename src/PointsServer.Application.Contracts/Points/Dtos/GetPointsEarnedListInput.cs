@@ -19,6 +19,6 @@ public class GetPointsEarnedListInput : PagedAndSortedResultRequestDto
 public enum SearchType
 {
     All,
-    Operator,
+    Kol,
     Inviter
 }

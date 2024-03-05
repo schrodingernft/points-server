@@ -82,7 +82,7 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
             mustQuery.Add(q => q.Term(i =>
                 i.Field(f => f.Role).Value(OperatorRole.Inviter)));
         }
-        else if (input.Type == SearchType.Operator)
+        else if (input.Type == SearchType.Kol)
         {
             mustQuery.Add(q => q.Term(i =>
                 i.Field(f => f.Role).Value(OperatorRole.Kol)));
