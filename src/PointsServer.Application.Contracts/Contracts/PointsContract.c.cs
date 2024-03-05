@@ -13,6 +13,106 @@ using aelf = global::AElf.CSharp.Core;
 namespace Points.Contracts.Point {
 
   #region Events
+  public partial class Joined : aelf::IEvent<Joined>
+  {
+    public global::System.Collections.Generic.IEnumerable<Joined> GetIndexed()
+    {
+      return new List<Joined>
+      {
+      };
+    }
+
+    public Joined GetNonIndexed()
+    {
+      return new Joined
+      {
+        DappId = DappId,
+        Domain = Domain,
+        Registrant = Registrant,
+      };
+    }
+  }
+
+  public partial class PointsUpdated : aelf::IEvent<PointsUpdated>
+  {
+    public global::System.Collections.Generic.IEnumerable<PointsUpdated> GetIndexed()
+    {
+      return new List<PointsUpdated>
+      {
+      };
+    }
+
+    public PointsUpdated GetNonIndexed()
+    {
+      return new PointsUpdated
+      {
+        PointStateList = PointStateList,
+      };
+    }
+  }
+
+  public partial class DappInformationChanged : aelf::IEvent<DappInformationChanged>
+  {
+    public global::System.Collections.Generic.IEnumerable<DappInformationChanged> GetIndexed()
+    {
+      return new List<DappInformationChanged>
+      {
+      };
+    }
+
+    public DappInformationChanged GetNonIndexed()
+    {
+      return new DappInformationChanged
+      {
+        DappId = DappId,
+        DappInfo = DappInfo,
+      };
+    }
+  }
+
+  public partial class SelfIncreasingPointsRulesChanged : aelf::IEvent<SelfIncreasingPointsRulesChanged>
+  {
+    public global::System.Collections.Generic.IEnumerable<SelfIncreasingPointsRulesChanged> GetIndexed()
+    {
+      return new List<SelfIncreasingPointsRulesChanged>
+      {
+      };
+    }
+
+    public SelfIncreasingPointsRulesChanged GetNonIndexed()
+    {
+      return new SelfIncreasingPointsRulesChanged
+      {
+        DappId = DappId,
+        PointName = PointName,
+        UserPoints = UserPoints,
+        KolPoints = KolPoints,
+        InviterPoints = InviterPoints,
+      };
+    }
+  }
+
+  public partial class InviterApplied : aelf::IEvent<InviterApplied>
+  {
+    public global::System.Collections.Generic.IEnumerable<InviterApplied> GetIndexed()
+    {
+      return new List<InviterApplied>
+      {
+      };
+    }
+
+    public InviterApplied GetNonIndexed()
+    {
+      return new InviterApplied
+      {
+        Domain = Domain,
+        DappId = DappId,
+        Invitee = Invitee,
+        Inviter = Inviter,
+      };
+    }
+  }
+
   public partial class ServicesEarningRulesChanged : aelf::IEvent<ServicesEarningRulesChanged>
   {
     public global::System.Collections.Generic.IEnumerable<ServicesEarningRulesChanged> GetIndexed()
@@ -51,45 +151,6 @@ namespace Points.Contracts.Point {
     }
   }
 
-  public partial class InviterApplyed : aelf::IEvent<InviterApplyed>
-  {
-    public global::System.Collections.Generic.IEnumerable<InviterApplyed> GetIndexed()
-    {
-      return new List<InviterApplyed>
-      {
-      };
-    }
-
-    public InviterApplyed GetNonIndexed()
-    {
-      return new InviterApplyed
-      {
-        Domain = Domain,
-        Service = Service,
-        Invitee = Invitee,
-        Inviter = Inviter,
-      };
-    }
-  }
-
-  public partial class PointsRecorded : aelf::IEvent<PointsRecorded>
-  {
-    public global::System.Collections.Generic.IEnumerable<PointsRecorded> GetIndexed()
-    {
-      return new List<PointsRecorded>
-      {
-      };
-    }
-
-    public PointsRecorded GetNonIndexed()
-    {
-      return new PointsRecorded
-      {
-        PointsRecordList = PointsRecordList,
-      };
-    }
-  }
-
   #endregion
   public static partial class PointsContractContainer
   {
@@ -99,19 +160,22 @@ namespace Points.Contracts.Point {
     static readonly aelf::Marshaller<global::Points.Contracts.Point.InitializeInput> __Marshaller_InitializeInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.InitializeInput.Parser.ParseFrom);
     static readonly aelf::Marshaller<global::Google.Protobuf.WellKnownTypes.Empty> __Marshaller_google_protobuf_Empty = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Google.Protobuf.WellKnownTypes.Empty.Parser.ParseFrom);
     static readonly aelf::Marshaller<global::AElf.Types.Address> __Marshaller_aelf_Address = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::AElf.Types.Address.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.CreatePointInput> __Marshaller_CreatePointInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.CreatePointInput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.RecordRegistrationInput> __Marshaller_RecordRegistrationInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.RecordRegistrationInput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.ApplyToOperatorInput> __Marshaller_ApplyToOperatorInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.ApplyToOperatorInput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.PointsSettlementInput> __Marshaller_PointsSettlementInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.PointsSettlementInput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Google.Protobuf.WellKnownTypes.Int32Value> __Marshaller_google_protobuf_Int32Value = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Google.Protobuf.WellKnownTypes.Int32Value.Parser.ParseFrom);
     static readonly aelf::Marshaller<global::Points.Contracts.Point.SetReservedDomainListInput> __Marshaller_SetReservedDomainListInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.SetReservedDomainListInput.Parser.ParseFrom);
     static readonly aelf::Marshaller<global::Points.Contracts.Point.GetReservedDomainListOutput> __Marshaller_GetReservedDomainListOutput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetReservedDomainListOutput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.SetServicesEarningRulesInput> __Marshaller_SetServicesEarningRulesInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.SetServicesEarningRulesInput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetServicesEarningRulesInput> __Marshaller_GetServicesEarningRulesInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetServicesEarningRulesInput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetServicesEarningRulesOutput> __Marshaller_GetServicesEarningRulesOutput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetServicesEarningRulesOutput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.SetServiceApplyActionLimitInput> __Marshaller_SetServiceApplyActionLimitInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.SetServiceApplyActionLimitInput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetServiceApplyActionLimitInput> __Marshaller_GetServiceApplyActionLimitInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetServiceApplyActionLimitInput.Parser.ParseFrom);
-    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetServiceApplyActionLimitOutput> __Marshaller_GetServiceApplyActionLimitOutput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetServiceApplyActionLimitOutput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.CreatePointInput> __Marshaller_CreatePointInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.CreatePointInput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Google.Protobuf.WellKnownTypes.Int32Value> __Marshaller_google_protobuf_Int32Value = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Google.Protobuf.WellKnownTypes.Int32Value.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.JoinInput> __Marshaller_JoinInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.JoinInput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetPointsBalanceInput> __Marshaller_GetPointsBalanceInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetPointsBalanceInput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetPointsBalanceOutput> __Marshaller_GetPointsBalanceOutput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetPointsBalanceOutput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.SetDappInformationInput> __Marshaller_SetDappInformationInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.SetDappInformationInput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetDappInformationInput> __Marshaller_GetDappInformationInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetDappInformationInput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetDappInformationOutput> __Marshaller_GetDappInformationOutput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetDappInformationOutput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.SetSelfIncreasingPointsRulesInput> __Marshaller_SetSelfIncreasingPointsRulesInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.SetSelfIncreasingPointsRulesInput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetSelfIncreasingPointsRuleInput> __Marshaller_GetSelfIncreasingPointsRuleInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetSelfIncreasingPointsRuleInput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.GetSelfIncreasingPointsRuleOutput> __Marshaller_GetSelfIncreasingPointsRuleOutput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.GetSelfIncreasingPointsRuleOutput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.ApplyToOperatorInput> __Marshaller_ApplyToOperatorInput = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.ApplyToOperatorInput.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Google.Protobuf.WellKnownTypes.StringValue> __Marshaller_google_protobuf_StringValue = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Google.Protobuf.WellKnownTypes.StringValue.Parser.ParseFrom);
+    static readonly aelf::Marshaller<global::Points.Contracts.Point.DomainOperatorRelationship> __Marshaller_DomainOperatorRelationship = aelf::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Points.Contracts.Point.DomainOperatorRelationship.Parser.ParseFrom);
     #endregion
 
     #region Methods
@@ -136,48 +200,6 @@ namespace Points.Contracts.Point {
         __Marshaller_google_protobuf_Empty,
         __Marshaller_aelf_Address);
 
-    static readonly aelf::Method<global::Points.Contracts.Point.CreatePointInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_CreatePoint = new aelf::Method<global::Points.Contracts.Point.CreatePointInput, global::Google.Protobuf.WellKnownTypes.Empty>(
-        aelf::MethodType.Action,
-        __ServiceName,
-        "CreatePoint",
-        __Marshaller_CreatePointInput,
-        __Marshaller_google_protobuf_Empty);
-
-    static readonly aelf::Method<global::Points.Contracts.Point.RecordRegistrationInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_RecordRegistration = new aelf::Method<global::Points.Contracts.Point.RecordRegistrationInput, global::Google.Protobuf.WellKnownTypes.Empty>(
-        aelf::MethodType.Action,
-        __ServiceName,
-        "RecordRegistration",
-        __Marshaller_RecordRegistrationInput,
-        __Marshaller_google_protobuf_Empty);
-
-    static readonly aelf::Method<global::Points.Contracts.Point.ApplyToOperatorInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_ApplyToOperator = new aelf::Method<global::Points.Contracts.Point.ApplyToOperatorInput, global::Google.Protobuf.WellKnownTypes.Empty>(
-        aelf::MethodType.Action,
-        __ServiceName,
-        "ApplyToOperator",
-        __Marshaller_ApplyToOperatorInput,
-        __Marshaller_google_protobuf_Empty);
-
-    static readonly aelf::Method<global::Points.Contracts.Point.PointsSettlementInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_PointsSettlement = new aelf::Method<global::Points.Contracts.Point.PointsSettlementInput, global::Google.Protobuf.WellKnownTypes.Empty>(
-        aelf::MethodType.Action,
-        __ServiceName,
-        "PointsSettlement",
-        __Marshaller_PointsSettlementInput,
-        __Marshaller_google_protobuf_Empty);
-
-    static readonly aelf::Method<global::Google.Protobuf.WellKnownTypes.Int32Value, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SetMaxRecordListCount = new aelf::Method<global::Google.Protobuf.WellKnownTypes.Int32Value, global::Google.Protobuf.WellKnownTypes.Empty>(
-        aelf::MethodType.Action,
-        __ServiceName,
-        "SetMaxRecordListCount",
-        __Marshaller_google_protobuf_Int32Value,
-        __Marshaller_google_protobuf_Empty);
-
-    static readonly aelf::Method<global::Google.Protobuf.WellKnownTypes.Int32Value, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SetMaxApplyCount = new aelf::Method<global::Google.Protobuf.WellKnownTypes.Int32Value, global::Google.Protobuf.WellKnownTypes.Empty>(
-        aelf::MethodType.Action,
-        __ServiceName,
-        "SetMaxApplyCount",
-        __Marshaller_google_protobuf_Int32Value,
-        __Marshaller_google_protobuf_Empty);
-
     static readonly aelf::Method<global::Points.Contracts.Point.SetReservedDomainListInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SetReservedDomainList = new aelf::Method<global::Points.Contracts.Point.SetReservedDomainListInput, global::Google.Protobuf.WellKnownTypes.Empty>(
         aelf::MethodType.Action,
         __ServiceName,
@@ -192,40 +214,75 @@ namespace Points.Contracts.Point {
         __Marshaller_google_protobuf_Empty,
         __Marshaller_GetReservedDomainListOutput);
 
-    static readonly aelf::Method<global::Points.Contracts.Point.SetServicesEarningRulesInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SetServicesEarningRules = new aelf::Method<global::Points.Contracts.Point.SetServicesEarningRulesInput, global::Google.Protobuf.WellKnownTypes.Empty>(
+    static readonly aelf::Method<global::Points.Contracts.Point.CreatePointInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_CreatePoint = new aelf::Method<global::Points.Contracts.Point.CreatePointInput, global::Google.Protobuf.WellKnownTypes.Empty>(
         aelf::MethodType.Action,
         __ServiceName,
-        "SetServicesEarningRules",
-        __Marshaller_SetServicesEarningRulesInput,
+        "CreatePoint",
+        __Marshaller_CreatePointInput,
         __Marshaller_google_protobuf_Empty);
 
-    static readonly aelf::Method<global::Points.Contracts.Point.GetServicesEarningRulesInput, global::Points.Contracts.Point.GetServicesEarningRulesOutput> __Method_GetServicesEarningRules = new aelf::Method<global::Points.Contracts.Point.GetServicesEarningRulesInput, global::Points.Contracts.Point.GetServicesEarningRulesOutput>(
-        aelf::MethodType.View,
-        __ServiceName,
-        "GetServicesEarningRules",
-        __Marshaller_GetServicesEarningRulesInput,
-        __Marshaller_GetServicesEarningRulesOutput);
-
-    static readonly aelf::Method<global::Points.Contracts.Point.SetServiceApplyActionLimitInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SetServiceApplyActionLimit = new aelf::Method<global::Points.Contracts.Point.SetServiceApplyActionLimitInput, global::Google.Protobuf.WellKnownTypes.Empty>(
+    static readonly aelf::Method<global::Google.Protobuf.WellKnownTypes.Int32Value, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SetMaxApplyCount = new aelf::Method<global::Google.Protobuf.WellKnownTypes.Int32Value, global::Google.Protobuf.WellKnownTypes.Empty>(
         aelf::MethodType.Action,
         __ServiceName,
-        "SetServiceApplyActionLimit",
-        __Marshaller_SetServiceApplyActionLimitInput,
+        "SetMaxApplyCount",
+        __Marshaller_google_protobuf_Int32Value,
         __Marshaller_google_protobuf_Empty);
 
-    static readonly aelf::Method<global::Points.Contracts.Point.GetServiceApplyActionLimitInput, global::Points.Contracts.Point.GetServiceApplyActionLimitOutput> __Method_GetServiceApplyActionLimit = new aelf::Method<global::Points.Contracts.Point.GetServiceApplyActionLimitInput, global::Points.Contracts.Point.GetServiceApplyActionLimitOutput>(
-        aelf::MethodType.View,
+    static readonly aelf::Method<global::Points.Contracts.Point.JoinInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_Join = new aelf::Method<global::Points.Contracts.Point.JoinInput, global::Google.Protobuf.WellKnownTypes.Empty>(
+        aelf::MethodType.Action,
         __ServiceName,
-        "GetServiceApplyActionLimit",
-        __Marshaller_GetServiceApplyActionLimitInput,
-        __Marshaller_GetServiceApplyActionLimitOutput);
+        "Join",
+        __Marshaller_JoinInput,
+        __Marshaller_google_protobuf_Empty);
 
-    static readonly aelf::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::Google.Protobuf.WellKnownTypes.Int32Value> __Method_GetMaxRecordListCount = new aelf::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::Google.Protobuf.WellKnownTypes.Int32Value>(
+    static readonly aelf::Method<global::Points.Contracts.Point.GetPointsBalanceInput, global::Points.Contracts.Point.GetPointsBalanceOutput> __Method_GetPointsBalance = new aelf::Method<global::Points.Contracts.Point.GetPointsBalanceInput, global::Points.Contracts.Point.GetPointsBalanceOutput>(
         aelf::MethodType.View,
         __ServiceName,
-        "GetMaxRecordListCount",
-        __Marshaller_google_protobuf_Empty,
-        __Marshaller_google_protobuf_Int32Value);
+        "GetPointsBalance",
+        __Marshaller_GetPointsBalanceInput,
+        __Marshaller_GetPointsBalanceOutput);
+
+    static readonly aelf::Method<global::Points.Contracts.Point.SetDappInformationInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SetDappInformation = new aelf::Method<global::Points.Contracts.Point.SetDappInformationInput, global::Google.Protobuf.WellKnownTypes.Empty>(
+        aelf::MethodType.Action,
+        __ServiceName,
+        "SetDappInformation",
+        __Marshaller_SetDappInformationInput,
+        __Marshaller_google_protobuf_Empty);
+
+    static readonly aelf::Method<global::Points.Contracts.Point.GetDappInformationInput, global::Points.Contracts.Point.GetDappInformationOutput> __Method_GetDappInformation = new aelf::Method<global::Points.Contracts.Point.GetDappInformationInput, global::Points.Contracts.Point.GetDappInformationOutput>(
+        aelf::MethodType.View,
+        __ServiceName,
+        "GetDappInformation",
+        __Marshaller_GetDappInformationInput,
+        __Marshaller_GetDappInformationOutput);
+
+    static readonly aelf::Method<global::Points.Contracts.Point.SetSelfIncreasingPointsRulesInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SetSelfIncreasingPointsRules = new aelf::Method<global::Points.Contracts.Point.SetSelfIncreasingPointsRulesInput, global::Google.Protobuf.WellKnownTypes.Empty>(
+        aelf::MethodType.Action,
+        __ServiceName,
+        "SetSelfIncreasingPointsRules",
+        __Marshaller_SetSelfIncreasingPointsRulesInput,
+        __Marshaller_google_protobuf_Empty);
+
+    static readonly aelf::Method<global::Points.Contracts.Point.GetSelfIncreasingPointsRuleInput, global::Points.Contracts.Point.GetSelfIncreasingPointsRuleOutput> __Method_GetSelfIncreasingPointsRule = new aelf::Method<global::Points.Contracts.Point.GetSelfIncreasingPointsRuleInput, global::Points.Contracts.Point.GetSelfIncreasingPointsRuleOutput>(
+        aelf::MethodType.View,
+        __ServiceName,
+        "GetSelfIncreasingPointsRule",
+        __Marshaller_GetSelfIncreasingPointsRuleInput,
+        __Marshaller_GetSelfIncreasingPointsRuleOutput);
+
+    static readonly aelf::Method<global::Points.Contracts.Point.ApplyToOperatorInput, global::Google.Protobuf.WellKnownTypes.Empty> __Method_ApplyToOperator = new aelf::Method<global::Points.Contracts.Point.ApplyToOperatorInput, global::Google.Protobuf.WellKnownTypes.Empty>(
+        aelf::MethodType.Action,
+        __ServiceName,
+        "ApplyToOperator",
+        __Marshaller_ApplyToOperatorInput,
+        __Marshaller_google_protobuf_Empty);
+
+    static readonly aelf::Method<global::Google.Protobuf.WellKnownTypes.StringValue, global::Points.Contracts.Point.DomainOperatorRelationship> __Method_GetDomainApplyInfo = new aelf::Method<global::Google.Protobuf.WellKnownTypes.StringValue, global::Points.Contracts.Point.DomainOperatorRelationship>(
+        aelf::MethodType.View,
+        __ServiceName,
+        "GetDomainApplyInfo",
+        __Marshaller_google_protobuf_StringValue,
+        __Marshaller_DomainOperatorRelationship);
 
     static readonly aelf::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::Google.Protobuf.WellKnownTypes.Int32Value> __Method_GetMaxApplyCount = new aelf::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::Google.Protobuf.WellKnownTypes.Int32Value>(
         aelf::MethodType.View,
@@ -273,36 +330,6 @@ namespace Points.Contracts.Point {
     //     throw new global::System.NotImplementedException();
     //   }
     //
-    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty CreatePoint(global::Points.Contracts.Point.CreatePointInput input)
-    //   {
-    //     throw new global::System.NotImplementedException();
-    //   }
-    //
-    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty RecordRegistration(global::Points.Contracts.Point.RecordRegistrationInput input)
-    //   {
-    //     throw new global::System.NotImplementedException();
-    //   }
-    //
-    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty ApplyToOperator(global::Points.Contracts.Point.ApplyToOperatorInput input)
-    //   {
-    //     throw new global::System.NotImplementedException();
-    //   }
-    //
-    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty PointsSettlement(global::Points.Contracts.Point.PointsSettlementInput input)
-    //   {
-    //     throw new global::System.NotImplementedException();
-    //   }
-    //
-    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty SetMaxRecordListCount(global::Google.Protobuf.WellKnownTypes.Int32Value input)
-    //   {
-    //     throw new global::System.NotImplementedException();
-    //   }
-    //
-    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty SetMaxApplyCount(global::Google.Protobuf.WellKnownTypes.Int32Value input)
-    //   {
-    //     throw new global::System.NotImplementedException();
-    //   }
-    //
     //   public virtual global::Google.Protobuf.WellKnownTypes.Empty SetReservedDomainList(global::Points.Contracts.Point.SetReservedDomainListInput input)
     //   {
     //     throw new global::System.NotImplementedException();
@@ -313,27 +340,52 @@ namespace Points.Contracts.Point {
     //     throw new global::System.NotImplementedException();
     //   }
     //
-    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty SetServicesEarningRules(global::Points.Contracts.Point.SetServicesEarningRulesInput input)
+    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty CreatePoint(global::Points.Contracts.Point.CreatePointInput input)
     //   {
     //     throw new global::System.NotImplementedException();
     //   }
     //
-    //   public virtual global::Points.Contracts.Point.GetServicesEarningRulesOutput GetServicesEarningRules(global::Points.Contracts.Point.GetServicesEarningRulesInput input)
+    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty SetMaxApplyCount(global::Google.Protobuf.WellKnownTypes.Int32Value input)
     //   {
     //     throw new global::System.NotImplementedException();
     //   }
     //
-    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty SetServiceApplyActionLimit(global::Points.Contracts.Point.SetServiceApplyActionLimitInput input)
+    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty Join(global::Points.Contracts.Point.JoinInput input)
     //   {
     //     throw new global::System.NotImplementedException();
     //   }
     //
-    //   public virtual global::Points.Contracts.Point.GetServiceApplyActionLimitOutput GetServiceApplyActionLimit(global::Points.Contracts.Point.GetServiceApplyActionLimitInput input)
+    //   public virtual global::Points.Contracts.Point.GetPointsBalanceOutput GetPointsBalance(global::Points.Contracts.Point.GetPointsBalanceInput input)
     //   {
     //     throw new global::System.NotImplementedException();
     //   }
     //
-    //   public virtual global::Google.Protobuf.WellKnownTypes.Int32Value GetMaxRecordListCount(global::Google.Protobuf.WellKnownTypes.Empty input)
+    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty SetDappInformation(global::Points.Contracts.Point.SetDappInformationInput input)
+    //   {
+    //     throw new global::System.NotImplementedException();
+    //   }
+    //
+    //   public virtual global::Points.Contracts.Point.GetDappInformationOutput GetDappInformation(global::Points.Contracts.Point.GetDappInformationInput input)
+    //   {
+    //     throw new global::System.NotImplementedException();
+    //   }
+    //
+    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty SetSelfIncreasingPointsRules(global::Points.Contracts.Point.SetSelfIncreasingPointsRulesInput input)
+    //   {
+    //     throw new global::System.NotImplementedException();
+    //   }
+    //
+    //   public virtual global::Points.Contracts.Point.GetSelfIncreasingPointsRuleOutput GetSelfIncreasingPointsRule(global::Points.Contracts.Point.GetSelfIncreasingPointsRuleInput input)
+    //   {
+    //     throw new global::System.NotImplementedException();
+    //   }
+    //
+    //   public virtual global::Google.Protobuf.WellKnownTypes.Empty ApplyToOperator(global::Points.Contracts.Point.ApplyToOperatorInput input)
+    //   {
+    //     throw new global::System.NotImplementedException();
+    //   }
+    //
+    //   public virtual global::Points.Contracts.Point.DomainOperatorRelationship GetDomainApplyInfo(global::Google.Protobuf.WellKnownTypes.StringValue input)
     //   {
     //     throw new global::System.NotImplementedException();
     //   }
@@ -352,19 +404,18 @@ namespace Points.Contracts.Point {
     //       .AddMethod(__Method_Initialize, serviceImpl.Initialize)
     //       .AddMethod(__Method_SetAdmin, serviceImpl.SetAdmin)
     //       .AddMethod(__Method_GetAdmin, serviceImpl.GetAdmin)
-    //       .AddMethod(__Method_CreatePoint, serviceImpl.CreatePoint)
-    //       .AddMethod(__Method_RecordRegistration, serviceImpl.RecordRegistration)
-    //       .AddMethod(__Method_ApplyToOperator, serviceImpl.ApplyToOperator)
-    //       .AddMethod(__Method_PointsSettlement, serviceImpl.PointsSettlement)
-    //       .AddMethod(__Method_SetMaxRecordListCount, serviceImpl.SetMaxRecordListCount)
-    //       .AddMethod(__Method_SetMaxApplyCount, serviceImpl.SetMaxApplyCount)
     //       .AddMethod(__Method_SetReservedDomainList, serviceImpl.SetReservedDomainList)
     //       .AddMethod(__Method_GetReservedDomainList, serviceImpl.GetReservedDomainList)
-    //       .AddMethod(__Method_SetServicesEarningRules, serviceImpl.SetServicesEarningRules)
-    //       .AddMethod(__Method_GetServicesEarningRules, serviceImpl.GetServicesEarningRules)
-    //       .AddMethod(__Method_SetServiceApplyActionLimit, serviceImpl.SetServiceApplyActionLimit)
-    //       .AddMethod(__Method_GetServiceApplyActionLimit, serviceImpl.GetServiceApplyActionLimit)
-    //       .AddMethod(__Method_GetMaxRecordListCount, serviceImpl.GetMaxRecordListCount)
+    //       .AddMethod(__Method_CreatePoint, serviceImpl.CreatePoint)
+    //       .AddMethod(__Method_SetMaxApplyCount, serviceImpl.SetMaxApplyCount)
+    //       .AddMethod(__Method_Join, serviceImpl.Join)
+    //       .AddMethod(__Method_GetPointsBalance, serviceImpl.GetPointsBalance)
+    //       .AddMethod(__Method_SetDappInformation, serviceImpl.SetDappInformation)
+    //       .AddMethod(__Method_GetDappInformation, serviceImpl.GetDappInformation)
+    //       .AddMethod(__Method_SetSelfIncreasingPointsRules, serviceImpl.SetSelfIncreasingPointsRules)
+    //       .AddMethod(__Method_GetSelfIncreasingPointsRule, serviceImpl.GetSelfIncreasingPointsRule)
+    //       .AddMethod(__Method_ApplyToOperator, serviceImpl.ApplyToOperator)
+    //       .AddMethod(__Method_GetDomainApplyInfo, serviceImpl.GetDomainApplyInfo)
     //       .AddMethod(__Method_GetMaxApplyCount, serviceImpl.GetMaxApplyCount).Build();
     // }
 

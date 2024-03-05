@@ -79,7 +79,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
                 : OperatorRole.Inviter,
             Status = ApplyStatus.Applying,
             Domain = applyToOperatorInput.Domain,
-            DappName = applyToOperatorInput.Service,
+            DappName = applyToOperatorInput.DappId.ToHex(),
             Descibe = input.Describe,
             ApplyTime = DateTime.Now.Millisecond
         };
