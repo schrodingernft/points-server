@@ -11,7 +11,6 @@ namespace PointsServer.Controllers;
 [Area("app")]
 [ControllerName("ApplyController")]
 [Route("api/app/apply")]
-[Authorize]
 public class ApplyController : PointsServerController
 {
     private readonly IApplyService _applyService;
@@ -27,6 +26,7 @@ public class ApplyController : PointsServerController
         return await _applyService.ApplyCheckAsync(input);
     }
 
+    [Authorize]
     [HttpPost("confirm")]
     public async Task<ApplyConfirmDto> GetDAppListAsync(ApplyConfirmInput input)
     {

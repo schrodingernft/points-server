@@ -34,9 +34,9 @@
     <ContractReference Include="..\..\protobuf\authority_info.proto">
       <Link>Protobuf\Proto\authority_info.proto</Link>
     </ContractReference>
-    <ContractReference Include="..\..\protobuf\token_contract.proto">
-      <Link>Protobuf\Proto\token_contract.proto</Link>
-    </ContractReference>
+<!--    <ContractReference Include="..\..\protobuf\token_contract.proto">-->
+<!--      <Link>Protobuf\Proto\token_contract.proto</Link>-->
+<!--    </ContractReference>-->
   </ItemGroup>
 
   <ItemGroup>
