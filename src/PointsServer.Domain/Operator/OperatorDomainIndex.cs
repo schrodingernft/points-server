@@ -1,10 +1,11 @@
+using AElf.Indexing.Elasticsearch;
 using Nest;
 using PointsServer.Common;
 using PointsServer.Entities;
 
 namespace PointsServer.Operator;
 
-public class OperatorDomainIndex : PointsServerEntity<string>
+public class OperatorDomainIndex : PointsServerEntity<string>, IIndexBuild
 {
     [Keyword] public override string Id { get; set; }
     [Keyword] public string Address { get; set; }
