@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Orleans;
+using PointsServer.Common;
 using PointsServer.Grains.State.Points;
 using Volo.Abp.ObjectMapping;
 
@@ -43,7 +44,7 @@ public class OperatorPointActionSumGrain : Grain<OperatorPointActionSumState>, I
             }
             else
             {
-                var nowMillisecond = DateTime.Now.Millisecond;
+                var nowMillisecond = DateTime.UtcNow.ToUtcMilliSeconds();
                 State.Id = this.GetPrimaryKeyString();
                 State.Domain = grainDto.Domain;
                 State.DappName = grainDto.DappName;

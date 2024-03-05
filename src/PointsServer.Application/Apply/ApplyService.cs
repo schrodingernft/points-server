@@ -106,7 +106,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
             Domain = applyToOperatorInput.Domain,
             DappName = applyToOperatorInput.DappId.ToHex(),
             Descibe = input.Describe,
-            ApplyTime = DateTime.Now.Millisecond
+            ApplyTime = DateTime.UtcNow.ToUtcMilliSeconds()
         };
 
         var operatorDomainGrain = _clusterClient.GetGrain<IOperatorDomainGrain>(dto.Domain);
