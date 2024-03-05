@@ -58,6 +58,7 @@ namespace PointsServer
             var configuration = context.Services.GetConfiguration();
             var hostingEnvironment = context.Services.GetHostingEnvironment();
             Configure<ChainOption>(configuration.GetSection("ChainOption"));
+            Configure<CmsConfigOptions>(configuration.GetSection("CmsConfig"));
 
             ConfigureConventionalControllers();
             ConfigureAuthentication(context, configuration);
