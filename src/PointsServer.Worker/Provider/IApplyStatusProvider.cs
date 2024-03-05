@@ -62,6 +62,7 @@ public class ApplyStatusProvider : IApplyStatusProvider, ISingletonDependency
 
         await _distributedEventBus.PublishAsync(new OperatorDomainUpdateEto()
         {
+            Id = domain,
             Domain = domain,
             Status = ApplyStatus.Applied
         });

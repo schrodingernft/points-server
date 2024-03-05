@@ -88,11 +88,12 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
 
     public async Task<List<string>> GetDomainAppliedListAsync(List<string> domainList)
     {
-        return await _graphQlHelper.QueryAsync<List<string>>(new GraphQLRequest
+        var indexerResult = await _graphQlHelper.QueryAsync<DomainAppliedDto>(new GraphQLRequest
         {
             Query =
-                @"query($domainList:[String!]){
+                @"query($domainList:[String!]!){
                     checkDomainApplied(input: {domainList:$domainList}){
+                        domainList
                 }
             }",
             Variables = new
@@ -100,5 +101,6 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
                 domainList = domainList
             }
         });
+        return indexerResult.CheckDomainApplied.DomainList;
     }
 }

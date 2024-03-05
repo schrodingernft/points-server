@@ -11,6 +11,7 @@ using Orleans.Providers.MongoDB.Configuration;
 using PointsServer.Common.GraphQL;
 using PointsServer.Grains;
 using PointsServer.MongoDB;
+using PointsServer.Worker.Options;
 using PointsServer.Worker.Provider;
 using PointsServer.Worker.Services;
 using PointsServer.Worker.Worker;
@@ -40,6 +41,7 @@ public class PointsServerWorkerModule : AbpModule
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<PointsServerWorkerModule>(); });
 
         var configuration = context.Services.GetConfiguration();
+        Configure<WorkerOptions>(configuration.GetSection("Worker"));
         context.Services.AddHostedService<PointsServerWorkerHostService>();
         context.Services.AddSingleton<IPointsSumService, PointsSumService>();
         context.Services.AddSingleton<IApplyStatusService, ApplyStatusService>();
@@ -87,9 +89,9 @@ public class PointsServerWorkerModule : AbpModule
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
-        //context.AddBackgroundWorkerAsync<CalculationWorker>();
+        context.AddBackgroundWorkerAsync<CalculationWorker>();
         context.AddBackgroundWorkerAsync<PointsSumWorker>();
-        //context.AddBackgroundWorkerAsync<ApplyStatusWorker>();
+        context.AddBackgroundWorkerAsync<ApplyStatusWorker>();
         StartOrleans(context.ServiceProvider);
     }
 
