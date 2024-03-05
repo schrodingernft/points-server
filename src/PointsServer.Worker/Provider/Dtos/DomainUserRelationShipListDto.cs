@@ -2,9 +2,15 @@ using System.Collections.Generic;
 
 namespace PointsServer.Worker.Provider.Dtos;
 
+public class DomainUserRelationShipQuery
+{
+    public DomainUserRelationShipListDto QueryUserAsync { get; set; }
+}
+
 public class DomainUserRelationShipListDto
 {
-    public List<DomainUserRelationShipDto> DomainUserRelationShipList { get; set; }
+    public long TotalRecordCount { get; set; }
+    public List<DomainUserRelationShipDto> Data { get; set; }
 }
 
 public class DomainUserRelationShipDto

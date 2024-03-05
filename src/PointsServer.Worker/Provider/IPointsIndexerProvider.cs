@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GraphQL;
@@ -9,7 +10,7 @@ namespace PointsServer.Worker.Provider;
 
 public interface IPointsIndexerProvider
 {
-    Task<List<PointsSumDto>> GetPointsSumListAsync(long latestExecuteTime, int nowMillisecond);
+    Task<List<PointsSumDto>> GetPointsSumListAsync(DateTime latestExecuteTime, DateTime nowMillisecond);
 
     Task<List<DomainUserRelationShipDto>>
         GetDomainUserRelationshipsAsync(DomainUserRelationShipInput relationShipInput);
@@ -26,13 +27,15 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
         _graphQlHelper = graphQlHelper;
     }
 
-    public async Task<List<PointsSumDto>> GetPointsSumListAsync(long latestExecuteTime, int nowMillisecond)
+    public async Task<List<PointsSumDto>> GetPointsSumListAsync(DateTime latestExecuteTime, DateTime nowMillisecond)
     {
-        var indexerResult = await _graphQlHelper.QueryAsync<PointsSumListDto>(new GraphQLRequest
+        var indexerResult = await _graphQlHelper.QueryAsync<PointsSumBySymbol>(new GraphQLRequest
         {
             Query =
-                @"query($startTime:String!,$endTime:Int!){
-                    pointsSumList(relationShipInput: {startTime:$startTime,endTime:$endTime}){
+                @"query($startTime:DateTime!,$endTime:DateTime!,$skipCount:Int!,$maxResultCount:Int!){
+                    getPointsSumBySymbol(input: {startTime:$startTime,endTime:$endTime,skipCount:$skipCount,maxResultCount:$maxResultCount}){
+                        totalRecordCount,
+                        data {
                         id,
                         address,
                         domain,
@@ -43,37 +46,44 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
                         thirdSymbolAmount,
     					createTime,
                         updateTime
+                        }
+                        
                 }
             }",
             Variables = new
             {
-                startTime = latestExecuteTime, endTime = nowMillisecond
+                startTime = latestExecuteTime, endTime = nowMillisecond, skipCount = 0, maxResultCount = 1000
             }
         });
-        return indexerResult.PointsSumList;
+        return indexerResult.GetPointsSumBySymbol.Data;
     }
 
     public async Task<List<DomainUserRelationShipDto>> GetDomainUserRelationshipsAsync(
         DomainUserRelationShipInput relationShipInput)
     {
-        var indexerResult = await _graphQlHelper.QueryAsync<DomainUserRelationShipListDto>(new GraphQLRequest
+        var indexerResult = await _graphQlHelper.QueryAsync<DomainUserRelationShipQuery>(new GraphQLRequest
         {
             Query =
-                @"query($domains:[String!],$addresses:[String!]){
-                    domainUserRelationShipList(input: {domains:$domains,addresses:$addresses}){
-                        id,
-                        domain,
-                        address,
-                        dappName,
-    					createTime
+                @"query($domainIn:[String!]!,$addressIn:[String!]!,$dappNameIn:[String!]!,$skipCount:Int!,$maxResultCount:Int!){
+                    queryUserAsync(input: {domainIn:$domainIn,addressIn:$addressIn,dappNameIn:$dappNameIn,skipCount:$skipCount,maxResultCount:$maxResultCount}){
+                        totalRecordCount
+                        data {
+                          id
+                          domain
+                          address
+                          dappName
+                          createTime
+                        }
                 }
             }",
             Variables = new
             {
-                domains = relationShipInput.Domains, addresses = relationShipInput.Addresses
+                domainIn = relationShipInput.Domains, addressIn = relationShipInput.Addresses,
+                dappNameIn = relationShipInput.DappNames, skipCount = 0,
+                maxResultCount = 1000
             }
         });
-        return indexerResult.DomainUserRelationShipList;
+        return indexerResult.QueryUserAsync.Data;
     }
 
     public async Task<List<string>> GetDomainAppliedListAsync(List<string> domainList)

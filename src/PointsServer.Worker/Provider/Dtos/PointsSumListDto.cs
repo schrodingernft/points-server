@@ -1,11 +1,19 @@
+using System;
 using System.Collections.Generic;
 using PointsServer.Common;
 
 namespace PointsServer.Worker.Provider.Dtos;
 
+public class PointsSumBySymbol
+{
+    public PointsSumListDto GetPointsSumBySymbol { get; set; }
+
+}
+
 public class PointsSumListDto
 {
-    public List<PointsSumDto> PointsSumList { get; set; }
+    public List<PointsSumDto> Data { get; set; }
+    public long TotalRecordCount { get; set; }
 }
 
 public class PointsSumDto
@@ -18,6 +26,6 @@ public class PointsSumDto
     public long FirstSymbolAmount { get; set; }
     public long SecondSymbolAmount { get; set; }
     public long ThirdSymbolAmount { get; set; }
-    public long CreateTime { get; set; }
-    public long UpdateTime { get; set; }
+    public DateTime CreateTime { get; set; }
+    public DateTime UpdateTime { get; set; }
 }

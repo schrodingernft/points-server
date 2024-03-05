@@ -29,19 +29,7 @@ public class OperatorDomainHandler : IDistributedEventHandler<OperatorDomainCrea
 
     public async Task HandleEventAsync(OperatorDomainCreateEto eventData)
     {
-        try
-        {
-            var operatorDomainIndex =
-                _objectMapper.Map<OperatorDomainCreateEto, OperatorDomainIndex>(eventData);
-
-            await _operatorDomainRepository.AddAsync(operatorDomainIndex);
-
-            _logger.LogDebug("OperatorDomain information add success: {domain}", operatorDomainIndex.Domain);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "OperatorDomain information add fail: {domain}", eventData.Domain);
-        }
+        
     }
 
     public async Task HandleEventAsync(OperatorDomainUpdateEto eventData)

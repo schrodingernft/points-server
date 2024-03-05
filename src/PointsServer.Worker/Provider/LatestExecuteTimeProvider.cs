@@ -10,7 +10,7 @@ namespace PointsServer.Worker.Provider;
 
 public interface ILatestExecuteTimeProvider
 {
-    Task<long> GetLatestExecuteTimeAsync(string type);
+    Task<DateTime> GetLatestExecuteTimeAsync(string type);
     Task<WorkerOptionGrainDto> UpdateLatestExecuteTimeAsync(WorkerOptionGrainDto dto);
 }
 
@@ -25,7 +25,7 @@ public class LatestExecuteTimeProvider : ILatestExecuteTimeProvider, ISingletonD
         _logger = logger;
     }
 
-    public async Task<long> GetLatestExecuteTimeAsync(string type)
+    public async Task<DateTime> GetLatestExecuteTimeAsync(string type)
     {
         try
         {
@@ -38,12 +38,12 @@ public class LatestExecuteTimeProvider : ILatestExecuteTimeProvider, ISingletonD
                 throw new UserFriendlyException(result.Message);
             }
 
-            return result.Data;
+            return DateTime.UnixEpoch.AddMilliseconds(result.Data);
         }
         catch (Exception e)
         {
             _logger.LogError("GetLatestExecuteTimeAsync error: {Message}", e.Message);
-            return 0;
+            return new DateTime();
         }
     }
 

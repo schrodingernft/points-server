@@ -41,13 +41,13 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
     public async Task RecordPointsSumAsync()
     {
-        var nowMillisecond = DateTime.Now.Millisecond;
+        var now = DateTime.UtcNow;
         var type = CommonConstant.PointsSumWorker;
         var latestExecuteTime =
             await _latestExecuteTimeProvider.GetLatestExecuteTimeAsync(type);
 
         var pointsSumList =
-            await _pointsIndexerProvider.GetPointsSumListAsync(latestExecuteTime, nowMillisecond);
+            await _pointsIndexerProvider.GetPointsSumListAsync(latestExecuteTime, now);
         var pointsSumIndexList = new List<OperatorPointSumIndex>();
 
         var userAddresses = pointsSumList
@@ -98,7 +98,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
         await _latestExecuteTimeProvider.UpdateLatestExecuteTimeAsync(new WorkerOptionState
         {
             Type = type,
-            LatestExecuteTime = nowMillisecond
+            LatestExecuteTime = now.ToUtcMilliSeconds()
         });
     }
 }
