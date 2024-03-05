@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AElf;
 using AElf.Types;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Orleans;
 using Points.Contracts.Point;
@@ -31,11 +32,12 @@ public class ApplyService : PointsPlatformAppService, IApplyService
     private readonly IUserInformationProvider _userInformationProvider;
     private readonly IContractProvider _contractProvider;
     private readonly ApplyConfirmOptions _applyConfirmOptions;
+    private readonly ILogger<ApplyService> _logger;
 
     public ApplyService(IOperatorDomainProvider operatorDomainProvider, IClusterClient clusterClient,
         IDistributedEventBus distributedEventBus, IObjectMapper objectMapper,
         IUserInformationProvider userInformationProvider, IContractProvider contractProvider,
-        IOptionsSnapshot<ApplyConfirmOptions> applyConfirmOptions)
+        IOptionsSnapshot<ApplyConfirmOptions> applyConfirmOptions,ILogger<ApplyService> logger)
     {
         _operatorDomainProvider = operatorDomainProvider;
         _clusterClient = clusterClient;
@@ -44,6 +46,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
         _userInformationProvider = userInformationProvider;
         _contractProvider = contractProvider;
         _applyConfirmOptions = applyConfirmOptions.Value;
+        _logger = logger;
     }
 
     public async Task<ApplyCheckResultDto> ApplyCheckAsync(ApplyCheckInput input)
@@ -128,6 +131,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
     public async Task<DomainCheckDto> DomainCheckAsync(ApplyCheckInput input)
     {
         var domainCheckDto = new DomainCheckDto();
+        _logger.LogInformation("DomainCheckAsync:"+input.Domain+","+await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain));
         if (await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain) != null)
         {
             domainCheckDto.Exists = true;
