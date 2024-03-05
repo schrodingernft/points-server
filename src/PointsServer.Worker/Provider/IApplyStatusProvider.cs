@@ -17,18 +17,18 @@ namespace PointsServer.Worker.Provider;
 
 public interface IApplyStatusProvider
 {
-    Task<List<OperatorDomainIndex>> GetApplyingListAsync();
+    Task<List<OperatorDomainInfoIndex>> GetApplyingListAsync();
     Task BatchUpdateApplyStatusAsync(List<string> domainAppliedList);
 }
 
 public class ApplyStatusProvider : IApplyStatusProvider, ISingletonDependency
 {
-    private readonly INESTRepository<OperatorDomainIndex, string> _repository;
+    private readonly INESTRepository<OperatorDomainInfoIndex, string> _repository;
     private readonly IClusterClient _clusterClient;
     private readonly IDistributedEventBus _distributedEventBus;
     private readonly IObjectMapper _objectMapper;
 
-    public ApplyStatusProvider(INESTRepository<OperatorDomainIndex, string> repository, IClusterClient clusterClient,
+    public ApplyStatusProvider(INESTRepository<OperatorDomainInfoIndex, string> repository, IClusterClient clusterClient,
         IDistributedEventBus distributedEventBus, IObjectMapper objectMapper)
     {
         _repository = repository;
@@ -37,12 +37,12 @@ public class ApplyStatusProvider : IApplyStatusProvider, ISingletonDependency
         _objectMapper = objectMapper;
     }
 
-    public async Task<List<OperatorDomainIndex>> GetApplyingListAsync()
+    public async Task<List<OperatorDomainInfoIndex>> GetApplyingListAsync()
     {
-        var mustQuery = new List<Func<QueryContainerDescriptor<OperatorDomainIndex>, QueryContainer>>();
+        var mustQuery = new List<Func<QueryContainerDescriptor<OperatorDomainInfoIndex>, QueryContainer>>();
         mustQuery.Add(q => q.Term(i => i.Field(f => f.Status).Value(ApplyStatus.Applying)));
 
-        QueryContainer Filter(QueryContainerDescriptor<OperatorDomainIndex> f) =>
+        QueryContainer Filter(QueryContainerDescriptor<OperatorDomainInfoIndex> f) =>
             f.Bool(b => b.Must(mustQuery));
 
         var result = await _repository.GetListAsync(Filter);

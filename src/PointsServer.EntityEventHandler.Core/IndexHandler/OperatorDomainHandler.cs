@@ -13,11 +13,11 @@ namespace PointsServer.EntityEventHandler.Core.IndexHandler;
 public class OperatorDomainHandler : IDistributedEventHandler<OperatorDomainCreateEto>,
     IDistributedEventHandler<OperatorDomainUpdateEto>, ITransientDependency
 {
-    private readonly INESTRepository<OperatorDomainIndex, string> _operatorDomainRepository;
+    private readonly INESTRepository<OperatorDomainInfoIndex, string> _operatorDomainRepository;
     private readonly IObjectMapper _objectMapper;
     private readonly ILogger<OperatorDomainHandler> _logger;
 
-    public OperatorDomainHandler(INESTRepository<OperatorDomainIndex, string> operatorDomainRepository,
+    public OperatorDomainHandler(INESTRepository<OperatorDomainInfoIndex, string> operatorDomainRepository,
         IObjectMapper objectMapper,
         ILogger<OperatorDomainHandler> logger)
     {
@@ -37,7 +37,7 @@ public class OperatorDomainHandler : IDistributedEventHandler<OperatorDomainCrea
         try
         {
             var operatorDomainIndex =
-                _objectMapper.Map<OperatorDomainCreateEto, OperatorDomainIndex>(eventData);
+                _objectMapper.Map<OperatorDomainCreateEto, OperatorDomainInfoIndex>(eventData);
 
             await _operatorDomainRepository.AddAsync(operatorDomainIndex);
 
@@ -59,7 +59,7 @@ public class OperatorDomainHandler : IDistributedEventHandler<OperatorDomainCrea
         try
         {
             var operatorDomainIndex =
-                _objectMapper.Map<OperatorDomainUpdateEto, OperatorDomainIndex>(eventData);
+                _objectMapper.Map<OperatorDomainUpdateEto, OperatorDomainInfoIndex>(eventData);
 
             await _operatorDomainRepository.UpdateAsync(operatorDomainIndex);
 

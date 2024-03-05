@@ -5,16 +5,15 @@ using PointsServer.Entities;
 
 namespace PointsServer.Operator;
 
-public class OperatorDomainIndex : PointsServerEntity<string>, IIndexBuild
+public class OperatorDomainInfoIndex : PointsServerEntity<string>, IIndexBuild
 {
-    [Keyword] public override string Id { get; set; }
     [Keyword] public string Address { get; set; }
     [Keyword] public string InviterAddress { get; set; }
     public OperatorRole Role { get; set; }
     public ApplyStatus Status { get; set; }
-    public string Domain { get; set; }
-    public string Icon { get; set; }
-    public string DappName { get; set; }
-    public string Descibe { get; set; }
+    [Keyword] public string Domain { get; set; }
+    [Keyword] public string Icon { get; set; }
+    [Keyword] public string DappName { get; set; }
+    [Keyword] public string Descibe { get; set; }
     public long ApplyTime { get; set; }
 }

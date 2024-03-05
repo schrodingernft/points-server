@@ -10,8 +10,8 @@ public class PointsServerEventHandlerAutoMapperProfile : Profile
 {
     public PointsServerEventHandlerAutoMapperProfile()
     {
-        CreateMap<OperatorDomainCreateEto, OperatorDomainIndex>();
-        CreateMap<OperatorDomainUpdateEto, OperatorDomainIndex>();
+        CreateMap<OperatorDomainCreateEto, OperatorDomainInfoIndex>();
+        CreateMap<OperatorDomainUpdateEto, OperatorDomainInfoIndex>();
         CreateMap<UserInformationEto, UserIndex>();
     }
 }
