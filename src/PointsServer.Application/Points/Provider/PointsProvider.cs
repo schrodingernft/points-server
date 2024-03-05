@@ -161,7 +161,6 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
     					pointsName,
     					actionName,
     					amount,
-    					symbolName,
     					createTime,
     					updateTime
                     }
