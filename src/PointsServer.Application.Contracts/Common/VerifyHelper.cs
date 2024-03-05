@@ -32,7 +32,7 @@ public static class VerifyHelper
 
         var recovered = CryptoHelper.RecoverPublicKey(transaction.Signature.ToByteArray(),
             transaction.GetHash().ToByteArray(), out var publicKey);
-
+        
         return recovered && Address.FromPublicKey(publicKey) == transaction.From &&
                ByteString.CopyFrom(publicKey).ToHex() == inputPublicKey;
     }
