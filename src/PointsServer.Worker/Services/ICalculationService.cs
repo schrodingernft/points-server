@@ -40,6 +40,12 @@ public class CalculationService : ICalculationService, ISingletonDependency
 
         await GetOperatorPointSumListAsync(_allOperatorPointSumIndices, 0, _options.OnceFetchCount);
         _logger.LogInformation("total operatorPointSum count: {count}", _allOperatorPointSumIndices.Count);
+
+        if (_allOperatorPointSumIndices.IsNullOrEmpty())
+        {
+            return;
+        }
+
         _logger.LogInformation(
             "calculate config, period:{period}, updateCount:{updateCount}, onceFetchCount:{onceFetchCount}, parallelCount: {parallelCount}, decimal:{decimal}",
             _options.Period, _options.UpdateCount, _options.OnceFetchCount, _options.ParallelCount, _options.Decimal);
@@ -54,8 +60,10 @@ public class CalculationService : ICalculationService, ISingletonDependency
 
     private void CalculateScore()
     {
-        var timeStamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        var users = _allOperatorPointSumIndices.Where(t => t.Role == OperatorRole.User).ToList();
+        var timeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var users = _allOperatorPointSumIndices
+            .Where(t => t.Role == OperatorRole.User && !t.KolAddress.IsNullOrEmpty() &&
+                        !t.InviterAddress.IsNullOrEmpty()).ToList();
         var inviters = users.GroupBy(t => t.InviterAddress).ToList();
 
         //calculate inviter
@@ -63,8 +71,24 @@ public class CalculationService : ICalculationService, ISingletonDependency
         {
             MaxDegreeOfParallelism = _options.ParallelCount
         }, (invitersGroupItem, _) => { CalculateInviter(invitersGroupItem, timeStamp); });
-        
+
+        CalculateEmptyVisitorScore(timeStamp);
         CalculateEmptyScore(timeStamp);
+    }
+
+    private void CalculateEmptyVisitorScore(long timeStamp)
+    {
+        var users = _allOperatorPointSumIndices
+            .Where(t => t.Role == OperatorRole.User && !t.KolAddress.IsNullOrEmpty() &&
+                        t.InviterAddress.IsNullOrEmpty()).ToList();
+
+        var kols = users.GroupBy(t => t.KolAddress).ToList();
+
+        // calculate kols with empty invitor
+        Parallel.ForEach(kols, new ParallelOptions
+        {
+            MaxDegreeOfParallelism = _options.ParallelCount
+        }, (kolGroupItem, _) => { CalculateKol(kolGroupItem, timeStamp); });
     }
 
     private void CalculateInviter(IGrouping<string, OperatorPointSumIndex> inviter, long timeStamp)
@@ -78,8 +102,8 @@ public class CalculationService : ICalculationService, ISingletonDependency
         }
 
         // group by to cal kol
-        var kols = allUsers.GroupBy(t => t.InviterAddress);
-        inviterInterval += CalculateKol(kols, timeStamp);
+        var kols = allUsers.GroupBy(t => t.KolAddress).ToList();
+        inviterInterval += CalculateKols(kols, timeStamp);
 
         // get inviter and cal
         var inviterIndex = _allOperatorPointSumIndices.FirstOrDefault(t => t.Address == inviter.Key);
@@ -94,7 +118,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         inviterIndex.IncrementalSettlementTime = timeStamp;
     }
 
-    private long CalculateKol(IEnumerable<IGrouping<string, OperatorPointSumIndex>> kols, long timeStamp)
+    private long CalculateKols(IEnumerable<IGrouping<string, OperatorPointSumIndex>> kols, long timeStamp)
     {
         long inviterInterval = 0;
         foreach (var kol in kols)
@@ -124,10 +148,35 @@ public class CalculationService : ICalculationService, ISingletonDependency
         return inviterInterval;
     }
 
+    private long CalculateKol(IGrouping<string, OperatorPointSumIndex> kol, long timeStamp)
+    {
+        long kolInterval = 0;
+        // kol key
+        foreach (var user in kol)
+        {
+            var intervalTime = CalculateUser(user, timeStamp);
+            kolInterval += intervalTime;
+        }
+
+        // get kol and cal
+        var kolIndex = _allOperatorPointSumIndices.FirstOrDefault(t => t.Address == kol.Key);
+        if (kolIndex == null)
+        {
+            _logger.LogWarning("kol index not exist, address: {address}", kol.Key);
+            return 0;
+        }
+
+        kolIndex.SecondSymbolAmount +=
+            (long)(kolInterval * _options.Coefficient.Kol * (long)Math.Pow(10, _options.Decimal));
+        kolIndex.IncrementalSettlementTime = timeStamp;
+
+        return kolInterval;
+    }
+
     private void CalculateEmptyScore(long timeStamp)
     {
         var users = _allOperatorPointSumIndices.Where(t =>
-            t.Role == OperatorRole.User && t.KolAddress.IsNullOrEmpty() && t.InviterAddress.IsNullOrEmpty()).ToList();
+            t.Role == OperatorRole.User && t.KolAddress.IsNullOrEmpty()).ToList();
 
         foreach (var user in users)
         {
