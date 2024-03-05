@@ -11,6 +11,7 @@ using Orleans.Providers.MongoDB.Configuration;
 using PointsServer.Common.GraphQL;
 using PointsServer.Grains;
 using PointsServer.MongoDB;
+using PointsServer.Options;
 using PointsServer.Worker.Options;
 using PointsServer.Worker.Provider;
 using PointsServer.Worker.Services;
@@ -42,6 +43,7 @@ public class PointsServerWorkerModule : AbpModule
 
         var configuration = context.Services.GetConfiguration();
         Configure<WorkerOptions>(configuration.GetSection("Worker"));
+        Configure<PointsCalculateOptions>(configuration.GetSection("PointsCalculate"));
         context.Services.AddHostedService<PointsServerWorkerHostService>();
         context.Services.AddSingleton<IPointsSumService, PointsSumService>();
         context.Services.AddSingleton<IApplyStatusService, ApplyStatusService>();
