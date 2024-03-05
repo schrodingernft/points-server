@@ -18,7 +18,8 @@ public class UserInformationHandler : IDistributedEventHandler<UserInformationEt
     private readonly IObjectMapper _objectMapper;
     private readonly ILogger<UserInformationHandler> _logger;
 
-    public UserInformationHandler(INESTRepository<UserIndex, Guid> userRepository, IObjectMapper objectMapper, ILogger<UserInformationHandler> logger)
+    public UserInformationHandler(INESTRepository<UserIndex, Guid> userRepository, IObjectMapper objectMapper,
+        ILogger<UserInformationHandler> logger)
     {
         _userRepository = userRepository;
         _objectMapper = objectMapper;
@@ -28,6 +29,11 @@ public class UserInformationHandler : IDistributedEventHandler<UserInformationEt
 
     public async Task HandleEventAsync(UserInformationEto eventData)
     {
+        if (eventData == null)
+        {
+            return;
+        }
+
         try
         {
             var contact = _objectMapper.Map<UserInformationEto, UserIndex>(eventData);
@@ -38,9 +44,5 @@ public class UserInformationHandler : IDistributedEventHandler<UserInformationEt
         {
             _logger.LogError(ex, "{Message}", JsonConvert.SerializeObject(eventData));
         }
-        
     }
-    
-    
-    
 }

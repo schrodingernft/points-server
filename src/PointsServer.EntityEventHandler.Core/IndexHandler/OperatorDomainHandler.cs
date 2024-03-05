@@ -29,6 +29,11 @@ public class OperatorDomainHandler : IDistributedEventHandler<OperatorDomainCrea
 
     public async Task HandleEventAsync(OperatorDomainCreateEto eventData)
     {
+        if (eventData == null)
+        {
+            return;
+        }
+
         try
         {
             var operatorDomainIndex =
@@ -42,11 +47,15 @@ public class OperatorDomainHandler : IDistributedEventHandler<OperatorDomainCrea
         {
             _logger.LogError(ex, "OperatorDomain information add fail: {domain}", eventData.Domain);
         }
-        
     }
 
     public async Task HandleEventAsync(OperatorDomainUpdateEto eventData)
     {
+        if (eventData == null)
+        {
+            return;
+        }
+
         try
         {
             var operatorDomainIndex =
