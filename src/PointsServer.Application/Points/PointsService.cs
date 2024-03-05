@@ -61,7 +61,10 @@ public class PointsService : IPointsService, ISingletonDependency
         foreach (var index in pointsList.IndexList)
         {
             var dto = _objectMapper.Map<OperatorPointSumIndex, RankingListDto>(index);
-            dto.FollowersNumber = kolFollowersCountDic[index.Domain];
+            if (kolFollowersCountDic.TryGetValue(index.Domain, out var followersNumber))
+            {
+                dto.FollowersNumber = followersNumber;
+            }
             dto.Rate = pointsRules.KolAmount;
             items.Add(dto);
         }
