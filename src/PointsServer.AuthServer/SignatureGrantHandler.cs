@@ -133,13 +133,12 @@ public class SignatureGrantHandler : ITokenExtensionGrant, ITransientDependency
                 throw new UserFriendlyException("Source not support.");
             }
 
-            var user = await _userManager.FindByNameAsync(caHash);
+            var user = await _userManager.FindByNameAsync(userName!);
             if (user == null)
             {
                 var userId = Guid.NewGuid();
                 var createUserResult = await CreateUserAsync(_userManager, _userInformationProvider, userId,
-                    caAddressMain,
-                    caHash, caAddressMain, caAddressSide);
+                    address!, caHash, caAddressMain, caAddressSide);
                 AssertHelper.IsTrue(createUserResult, "Create user failed.");
                 user = await _userManager.GetByIdAsync(userId);
             }
