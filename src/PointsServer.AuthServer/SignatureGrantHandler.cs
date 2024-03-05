@@ -41,6 +41,7 @@ public class SignatureGrantHandler : ITokenExtensionGrant, ITransientDependency
 
     private const string LockKeyPrefix = "PointsServer:Auth:SignatureGrantHandler:";
     private const string SourcePortkey = "portkey";
+    private const string SourceNightAElf = "nightElf";
 
     public SignatureGrantHandler(IUserInformationProvider userInformationProvider,
         ILogger<SignatureGrantHandler> logger, IAbpDistributedLock distributedLock,
@@ -77,7 +78,10 @@ public class SignatureGrantHandler : ITokenExtensionGrant, ITransientDependency
 
             var publicKey = ByteArrayHelper.HexStringToByteArray(publicKeyVal);
             var signature = ByteArrayHelper.HexStringToByteArray(signatureVal);
+            var signAddress = Address.FromPublicKey(publicKey);
+
             var managerAddress = Address.FromPublicKey(publicKey);
+            var userName = string.Empty;
             var caHash = string.Empty;
             var caAddressMain = string.Empty;
             var caAddressSide = new Dictionary<string, string>();
@@ -117,7 +121,13 @@ public class SignatureGrantHandler : ITokenExtensionGrant, ITransientDependency
                         caAddressSide.TryAdd(account.ChainId, account.CaAddress);
                     }
                 }
+                userName = caHash;
             }
+            else if (source == SourceNightAElf)
+            {
+                AssertHelper.IsTrue(address == signAddress.ToBase58(), "Invalid address or pubkey");
+                userName = address;
+            } 
             else
             {
                 throw new UserFriendlyException("Source not support.");
