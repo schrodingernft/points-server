@@ -49,6 +49,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
     public async Task<ApplyCheckResultDto> ApplyCheckAsync(ApplyCheckInput input)
     {
         var result = new ApplyCheckResultDto();
+
         if (await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain) != null)
         {
             result.DomainCheck = "this domain already existed";

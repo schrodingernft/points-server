@@ -40,7 +40,6 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
                         address,
                         domain,
     					role,
-                        dappName,
                         firstSymbolAmount,
                         secondSymbolAmount,
                         thirdSymbolAmount,

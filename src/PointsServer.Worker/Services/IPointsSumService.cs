@@ -98,6 +98,11 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
                     break;
             }
 
+            if (relationshipFlag)
+            {
+                operatorPointSumIndex.DappName = operatorDomain.DappName;
+            }
+
             pointsSumIndexList.Add(operatorPointSumIndex);
         }
 
