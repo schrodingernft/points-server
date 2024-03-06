@@ -65,11 +65,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
     {
         var transaction =
             Transaction.Parser.ParseFrom(ByteArrayHelper.HexStringToByteArray(input.RawTransaction));
-
-        if (!VerifyHelper.VerifySignature(transaction, input.PublicKey))
-        {
-            throw new UserFriendlyException("RawTransaction validation failed");
-        }
+        
 
         var applyToOperatorInput = new ApplyToBeAdvocateInput();
         if (transaction.To.ToBase58() == _applyConfirmOptions.CAContractAddress &&

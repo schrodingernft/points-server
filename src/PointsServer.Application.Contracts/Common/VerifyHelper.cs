@@ -26,17 +26,6 @@ public static class VerifyHelper
         return emailReg.IsMatch(phoneNumber.Trim());
     }
 
-    public static bool VerifySignature(Transaction transaction, string inputPublicKey)
-    {
-        if (!transaction.VerifyFields()) return false;
-
-        var recovered = CryptoHelper.RecoverPublicKey(transaction.Signature.ToByteArray(),
-            transaction.GetHash().ToByteArray(), out var publicKey);
-        
-        return recovered && Address.FromPublicKey(publicKey) == transaction.From &&
-               ByteString.CopyFrom(publicKey).ToHex() == inputPublicKey;
-    }
-
 
     public static bool IsPhone(string input)
     {
