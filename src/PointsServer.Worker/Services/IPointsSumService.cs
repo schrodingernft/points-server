@@ -106,7 +106,10 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
             pointsSumIndexList.Add(operatorPointSumIndex);
         }
 
-        await _repository.BulkAddOrUpdateAsync(pointsSumIndexList);
+        if (!pointsSumIndexList.IsNullOrEmpty())
+        {
+            await _repository.BulkAddOrUpdateAsync(pointsSumIndexList);
+        }
 
         await _latestExecuteTimeProvider.UpdateLatestExecuteTimeAsync(new WorkerOptionState
         {
