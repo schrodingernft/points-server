@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using PointsServer.Points.Dtos;
 using Volo.Abp.Application.Dtos;
@@ -10,4 +11,5 @@ public interface IPointsService
     Task<RankingDetailDto> GetRankingDetailAsync(GetRankingDetailInput input);
     Task<GetPointsEarnedListDto> GetPointsEarnedListAsync(GetPointsEarnedListInput input);
     Task<PointsEarnedDetailDto> GetPointsEarnedDetailAsync(GetPointsEarnedDetailInput input);
+    Task<MyPointDetailsDto> GetMyPointsAsync(GetPointsEarnedDetailInput input);
 }

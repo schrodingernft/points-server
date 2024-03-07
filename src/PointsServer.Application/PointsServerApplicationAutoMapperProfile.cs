@@ -29,7 +29,10 @@ public class PointsServerApplicationAutoMapperProfile : Profile
         CreateMap<RankingDetailIndexerDto, ActionPoints>()
             .ForMember(t => t.Action, m => m.MapFrom(f => f.ActionName))
             .ForMember(t => t.Symbol, m => m.MapFrom(f => f.PointsName))
-            .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount))
-            ;
+            .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount));
+        CreateMap<RankingDetailIndexerDto, EarnedPointDto>()
+            .ForMember(t => t.Action, m => m.MapFrom(f => f.ActionName))
+            .ForMember(t => t.Symbol, m => m.MapFrom(f => f.PointsName))
+            .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount));
     }
 }

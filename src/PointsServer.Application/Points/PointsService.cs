@@ -2,16 +2,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using PointsServer.Common;
 using PointsServer.DApps;
 using PointsServer.DApps.Dtos;
 using PointsServer.DApps.Provider;
+using PointsServer.Options;
 using PointsServer.Points.Dtos;
 using PointsServer.Points.Provider;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.ObjectMapping;
+using Constants = PointsServer.Common.Constants;
 
 namespace PointsServer.Points;
 
@@ -65,6 +69,7 @@ public class PointsService : IPointsService, ISingletonDependency
             {
                 dto.FollowersNumber = followersNumber;
             }
+
             dto.Rate = pointsRules.KolAmount;
             items.Add(dto);
         }
@@ -177,6 +182,50 @@ public class PointsService : IPointsService, ISingletonDependency
         }
 
         _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));
+        return resp;
+    }
+
+    public async Task<MyPointDetailsDto> GetMyPointsAsync(GetPointsEarnedDetailInput input)
+    {
+        _logger.LogInformation("GetMyPointsAsync, req:{req}", JsonConvert.SerializeObject(input));
+        var queryInput = _objectMapper.Map<GetPointsEarnedDetailInput, GetOperatorPointsActionSumInput>(input);
+        var actionRecordPoints = await _pointsProvider.GetOperatorPointsActionSumAsync(queryInput);
+
+        var resp = new MyPointDetailsDto();
+        if (actionRecordPoints == null || actionRecordPoints.TotalRecordCount == 0)
+        {
+            return resp;
+        }
+
+        var actionPointList =
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<EarnedPointDto>>(actionRecordPoints.Data);
+
+        foreach (var earnedPointDto in actionPointList)
+        {
+            PointsRules pointsRules;
+            switch (earnedPointDto.Action)
+            {
+                case Constants.JoinAction:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
+                    break;
+                case Constants.SelfIncreaseAction:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    earnedPointDto.Rate = pointsRules.UserAmount;
+                    earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
+                    break;
+                case Constants.ApplyToBeAdvocateAction:
+                    break;
+                default:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, Constants.DefaultAction);
+                    earnedPointDto.DisplayName = Strings.Format(pointsRules.DisplayNamePattern, earnedPointDto.Action);
+                    break;
+            }
+        }
+
+        resp.PointDetails.AddRange(actionPointList);
+
+        _logger.LogInformation("GetMyPointsAsync, resp:{resp}", JsonConvert.SerializeObject(resp));
         return resp;
     }
 
