@@ -11,4 +11,5 @@ public class RankingListDto
    public long FollowersNumber { get; set; }
    public long UpdateTime { get; set; }
    public decimal Rate { get; set; }
+   public int Decimal { get; set; }
 }
