@@ -24,13 +24,13 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
     private readonly IPointsIndexerProvider _pointsIndexerProvider;
     private readonly LatestExecuteTimeProvider _latestExecuteTimeProvider;
     private readonly IObjectMapper _objectMapper;
-    private readonly INESTRepository<OperatorPointSumIndex, string> _repository;
+    private readonly INESTRepository<OperatorPointsSumIndex, string> _repository;
     private readonly IPointsSumProvider _pointsSumProvider;
     private readonly ILogger<PointsSumService> _logger;
 
     public PointsSumService(IPointsIndexerProvider pointsIndexerProvider,
         LatestExecuteTimeProvider latestExecuteTimeProvider,
-        IObjectMapper objectMapper, INESTRepository<OperatorPointSumIndex, string> repository,
+        IObjectMapper objectMapper, INESTRepository<OperatorPointsSumIndex, string> repository,
         IPointsSumProvider pointsSumProvider, ILogger<PointsSumService> logger)
     {
         _pointsIndexerProvider = pointsIndexerProvider;
@@ -50,7 +50,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         var pointsSumList =
             await _pointsIndexerProvider.GetPointsSumListAsync(latestExecuteTime, now);
-        var pointsSumIndexList = new List<OperatorPointSumIndex>();
+        var pointsSumIndexList = new List<OperatorPointsSumIndex>();
 
         var userAddresses = pointsSumList
             .Where(pointSum => pointSum.Role == OperatorRole.User)
@@ -77,7 +77,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         foreach (var pointsSumDto in pointsSumList)
         {
-            var operatorPointSumIndex = _objectMapper.Map<PointsSumDto, OperatorPointSumIndex>(pointsSumDto);
+            var operatorPointSumIndex = _objectMapper.Map<PointsSumDto, OperatorPointsSumIndex>(pointsSumDto);
             var relationshipFlag = domainDic.TryGetValue(operatorPointSumIndex.Domain, out var operatorDomain);
             switch (operatorPointSumIndex.Role)
             {

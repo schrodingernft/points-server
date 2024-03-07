@@ -22,7 +22,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
     private readonly ILogger<CalculationService> _logger;
     private readonly ICalculationProvider _calculationProvider;
     private readonly PointsCalculateOptions _options;
-    private List<OperatorPointSumIndex> _allOperatorPointSumIndices = new();
+    private List<OperatorPointsSumIndex> _allOperatorPointSumIndices = new();
 
     public CalculationService(ILogger<CalculationService> logger, ICalculationProvider calculationProvider,
         IOptionsSnapshot<PointsCalculateOptions> options)
@@ -91,9 +91,9 @@ public class CalculationService : ICalculationService, ISingletonDependency
         }, (kolGroupItem, _) => { CalculateKol(kolGroupItem, timeStamp); });
     }
 
-    private void CalculateInviter(IGrouping<string, OperatorPointSumIndex> inviter, long timeStamp)
+    private void CalculateInviter(IGrouping<string, OperatorPointsSumIndex> inviter, long timeStamp)
     {
-        var allUsers = new List<OperatorPointSumIndex>();
+        var allUsers = new List<OperatorPointsSumIndex>();
         long inviterInterval = 0;
         // inviter.Key
         foreach (var user in inviter)
@@ -118,7 +118,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         inviterIndex.IncrementalSettlementTime = timeStamp;
     }
 
-    private long CalculateKols(IEnumerable<IGrouping<string, OperatorPointSumIndex>> kols, long timeStamp)
+    private long CalculateKols(IEnumerable<IGrouping<string, OperatorPointsSumIndex>> kols, long timeStamp)
     {
         long inviterInterval = 0;
         foreach (var kol in kols)
@@ -148,7 +148,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         return inviterInterval;
     }
 
-    private long CalculateKol(IGrouping<string, OperatorPointSumIndex> kol, long timeStamp)
+    private long CalculateKol(IGrouping<string, OperatorPointsSumIndex> kol, long timeStamp)
     {
         long kolInterval = 0;
         // kol key
@@ -184,7 +184,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         }
     }
 
-    private long CalculateUser(OperatorPointSumIndex user, long timeStamp)
+    private long CalculateUser(OperatorPointsSumIndex user, long timeStamp)
     {
         var lastAccumulateTime =
             user.IncrementalSettlementTime == 0 ? user.UpdateTime : user.IncrementalSettlementTime;
@@ -198,7 +198,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         return intervalTime;
     }
 
-    private async Task GetOperatorPointSumListAsync(List<OperatorPointSumIndex> operatorPointSumIndices,
+    private async Task GetOperatorPointSumListAsync(List<OperatorPointsSumIndex> operatorPointSumIndices,
         int skipCount, int maxResultCount)
     {
         var operatorPointSum =

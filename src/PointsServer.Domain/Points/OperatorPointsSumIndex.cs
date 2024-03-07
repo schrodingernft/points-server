@@ -6,15 +6,15 @@ using PointsServer.Entities;
 
 namespace PointsServer.Points;
 
-public class OperatorPointSumIndex : PointsServerEntity<string>, IIndexBuild
+public class OperatorPointsSumIndex : PointsServerEntity<string>, IIndexBuild
 {
     [Keyword] public override string Id { get; set; }
-    public string Domain { get; set; }
+    [Keyword] public string Domain { get; set; }
     [Keyword] public string Address { get; set; }
     [Keyword] public string KolAddress { get; set; }
     [Keyword] public string InviterAddress { get; set; }
     public OperatorRole Role { get; set; }
-    public string DappName { get; set; }
+    [Keyword] public string DappName { get; set; }
     public long FirstSymbolAmount { get; set; }
     public long SecondSymbolAmount { get; set; }
     public long ThirdSymbolAmount { get; set; }
@@ -26,5 +26,5 @@ public class OperatorPointSumIndex : PointsServerEntity<string>, IIndexBuild
 public class OperatorPointSumIndexList
 {
     public long TotalCount { get; set; }
-    public List<OperatorPointSumIndex> IndexList { get; set; }
+    public List<OperatorPointsSumIndex> IndexList { get; set; }
 }
