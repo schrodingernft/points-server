@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GraphQL;
+using Microsoft.Extensions.Logging;
 using PointsServer.Common.GraphQL;
 using PointsServer.Worker.Provider.Dtos;
 using Volo.Abp.DependencyInjection;
@@ -21,10 +22,12 @@ public interface IPointsIndexerProvider
 public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependency
 {
     private readonly IGraphQlHelper _graphQlHelper;
+    private readonly ILogger<PointsIndexerProvider> _logger;
 
-    public PointsIndexerProvider(IGraphQlHelper graphQlHelper)
+    public PointsIndexerProvider(IGraphQlHelper graphQlHelper, ILogger<PointsIndexerProvider> logger)
     {
         _graphQlHelper = graphQlHelper;
+        _logger = logger;
     }
 
     public async Task<List<PointsSumDto>> GetPointsSumListAsync(DateTime latestExecuteTime, DateTime nowMillisecond)
@@ -54,6 +57,8 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
                 startTime = latestExecuteTime, endTime = nowMillisecond, skipCount = 0, maxResultCount = 1000
             }
         });
+        _logger.LogInformation(
+            "BulkAddOrUpdateAsync, count: {count}", indexerResult.GetPointsSumBySymbol.Data.Count);
         return indexerResult.GetPointsSumBySymbol.Data;
     }
 
