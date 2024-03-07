@@ -38,8 +38,13 @@ public class DAppService : IDAppService
     {
         var roles = Enum.GetValues(typeof(OperatorRole))
             .Cast<OperatorRole>()
+            .OrderBy(r => r)
             .Where(role => includePersonal || role != OperatorRole.User)
-            .Select(role => new RoleDto { Role = role.ToString() })
+            .Select(role => new RoleDto
+            {
+                Role = GetShowRole(role),
+                Key = (int)role
+            })
             .ToList();
         return await Task.FromResult(roles);
     }
@@ -48,5 +53,17 @@ public class DAppService : IDAppService
     {
         return _dAppOption.CurrentValue.DappInfos
             .ToDictionary(dApp => dApp.DappId, dApp => _objectMapper.Map<DappInfo, DAppDto>(dApp));
+    }
+
+    private string GetShowRole(OperatorRole role)
+    {
+        return role switch
+        {
+            OperatorRole.All => "All",
+            OperatorRole.Inviter => "Advocate",
+            OperatorRole.Kol => "Referrer",
+            OperatorRole.User => "User",
+            _ => "Unknown"
+        };
     }
 }
