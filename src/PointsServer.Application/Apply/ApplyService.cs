@@ -147,9 +147,9 @@ public class ApplyService : PointsPlatformAppService, IApplyService
             if (operatorDomainDto != null)
             {
                 domainCheckDto.Exists = true;
+                _logger.LogInformation(
+                    "DomainCheckAsync:local Es not find,to indexer find, domain: {domain}", operatorDomainDto.Domain);
             }
-            _logger.LogInformation(
-                "DomainCheckAsync:local Es not find,to indexer find, domain: {domain}", operatorDomainDto.Domain);
         }
 
 

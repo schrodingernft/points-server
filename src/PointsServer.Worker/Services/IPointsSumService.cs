@@ -114,7 +114,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
             if (!relationshipFlag)
             {
                 _logger.LogInformation(
-                    "RecordPointsSumAsync: local Es not find,to indexer find begin, domain: {domain}", operatorPointSumIndex.Domain);
+                    "RecordPointsSumAsync: local Es not find,to indexer find begin, domain: {domain}", operatorPointSumIndex.Domain);å
                 var operatorDomainDto = await _pointsProvider.GetOperatorDomainInfoAsync(new GetOperatorDomainInfoInput()
                 {
                     Domain = operatorPointSumIndex.Domain
