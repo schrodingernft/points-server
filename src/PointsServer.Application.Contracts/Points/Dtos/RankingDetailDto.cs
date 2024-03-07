@@ -8,9 +8,6 @@ public class RankingDetailDto
     public string Domain  { get; set; }
     public string Icon { get; set; }
     public string Describe { get; set; }
-    public long FollowersNumber { get; set; }
-    public decimal Rate { get; set; }
-    public int Decimal { get; set; }
     public List<ActionPoints> PointDetails { get; set; }
 }
 
@@ -21,4 +18,7 @@ public class ActionPoints
     public decimal Amount { get; set; }
     public long CreateTime { get; set; }
     public long UpdateTime { get; set; }
+    public long FollowersNumber { get; set; }
+    public decimal Rate { get; set; }
+    public int Decimal { get; set; }
 }
