@@ -122,9 +122,9 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
                 if (operatorDomainDto != null)
                 {
                     operatorPointSumIndex.DappName = operatorDomainDto.DappId;
+                    _logger.LogInformation(
+                        "RecordPointsSumAsync: local Es not find,to indexer find end, domain: {domain}", operatorDomainDto.Domain);
                 }
-                _logger.LogInformation(
-                    "RecordPointsSumAsync: local Es not find,to indexer find end, domain: {domain}", operatorDomainDto.Domain);
             }
 
             pointsSumIndexList.Add(operatorPointSumIndex);
