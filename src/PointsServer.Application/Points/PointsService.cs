@@ -53,7 +53,7 @@ public class PointsService : IPointsService, ISingletonDependency
         resp.TotalCount = pointsList.TotalCount;
         var items = new List<RankingListDto>();
 
-        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "RegisterIncrement");
+        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "SelfIncrease");
         var domains = pointsList.IndexList
             .Select(p => p.Domain).Distinct()
             .ToList();
@@ -179,7 +179,7 @@ public class PointsService : IPointsService, ISingletonDependency
             resp.Domain = domainInfo.Domain;
         }
 
-        _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));
+        _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(resp));
         return resp;
     }
 
