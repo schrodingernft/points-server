@@ -121,7 +121,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
         await _latestExecuteTimeProvider.UpdateLatestExecuteTimeAsync(new WorkerOptionState
         {
             Type = type,
-            LatestExecuteTime = latestExecuteMaxTime * 1000
+            LatestExecuteTime = latestExecuteMaxTime
         });
     }
 }
