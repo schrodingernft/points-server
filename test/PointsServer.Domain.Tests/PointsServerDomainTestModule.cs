@@ -6,6 +6,9 @@ using AElf.Indexing.Elasticsearch;
 using AElf.Indexing.Elasticsearch.Options;
 using AElf.Indexing.Elasticsearch.Services;
 using Elasticsearch.Net;
+using GraphQL.Client.Abstractions;
+using GraphQL.Client.Http;
+using GraphQL.Client.Serializer.Newtonsoft;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Volo.Abp;
@@ -36,6 +39,9 @@ public class PointsServerDomainTestModule : AbpModule
             options.Refresh = Refresh.True;
             options.IndexPrefix = "PointsServertest";
         });
+        context.Services.AddSingleton(new GraphQLHttpClient("https://indexer.pixiepoints.io/AElfIndexer_Points/PointsIndexerPluginSchema/graphql",
+            new NewtonsoftJsonSerializer()));
+        context.Services.AddScoped<IGraphQLClient>(sp => sp.GetRequiredService<GraphQLHttpClient>());
     }
     
     public override void OnApplicationShutdown(ApplicationShutdownContext context)
@@ -48,8 +54,8 @@ public class PointsServerDomainTestModule : AbpModule
             var types = GetTypesAssignableFrom<IIndexBuild>(m.Assembly);
             foreach (var t in types)
             {
-                AsyncHelper.RunSync(async () =>
-                    await elasticIndexService.DeleteIndexAsync("PointsServertest." + t.Name.ToLower()));
+                /*AsyncHelper.RunSync(async () =>
+                    await elasticIndexService.DeleteIndexAsync("PointsServertest." + t.Name.ToLower()));*/
             }
         });
     }

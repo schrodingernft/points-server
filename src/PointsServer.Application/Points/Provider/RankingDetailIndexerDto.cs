@@ -11,7 +11,7 @@ public class RankingDetailIndexerQueryDto
 
 public class OperatorDomainIndexerQueryDto
 {
-    public OperatorDomainDto GetOperatorDomainDto { get; set; }
+    public OperatorDomainDto OperatorDomainInfo { get; set; }
 }
 
 public class RankingDetailIndexerListDto

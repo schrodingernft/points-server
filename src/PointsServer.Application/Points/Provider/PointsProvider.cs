@@ -194,7 +194,7 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
             }
         });
 
-        return indexerResult.GetOperatorDomainDto;
+        return indexerResult.OperatorDomainInfo;
     }
 
     private Expression<Func<OperatorPointsSumIndex, object>> GetSortBy(SortingKeywordType sortingKeyWord)
