@@ -91,9 +91,9 @@ public class PointsServerWorkerModule : AbpModule
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
-        context.AddBackgroundWorkerAsync<CalculationWorker>();
-        context.AddBackgroundWorkerAsync<PointsSumWorker>();
-        context.AddBackgroundWorkerAsync<ApplyStatusWorker>();
+        AsyncHelper.RunSync(async () => await context.AddBackgroundWorkerAsync<CalculationWorker>());
+        AsyncHelper.RunSync(async () => await context.AddBackgroundWorkerAsync<PointsSumWorker>());
+        AsyncHelper.RunSync(async () => await context.AddBackgroundWorkerAsync<ApplyStatusWorker>());
         StartOrleans(context.ServiceProvider);
     }
 
