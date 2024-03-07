@@ -153,7 +153,7 @@ public class PointsService : IPointsService, ISingletonDependency
                 pointsEarnedListDto.FollowersNumber = followersNumber;
             }
 
-            pointsEarnedListDto.Rate = pointsRules.KolAmount;
+            pointsEarnedListDto.Rate = pointsEarnedListDto.Role == OperatorRole.Kol ? pointsRules.KolAmount : pointsRules.InviterAmount;
             pointsEarnedListDto.Decimal = pointsRules.Decimal;
 
             pointsEarnedListDto.DappName = GetDappDto(operatorPointSumIndex.DappName).DappName;
@@ -209,7 +209,7 @@ public class PointsService : IPointsService, ISingletonDependency
                 actionPoints.FollowersNumber = followersNumber;
             }
 
-            actionPoints.Rate = pointsRules.KolAmount;
+            actionPoints.Rate = input.Role == OperatorRole.Kol ? pointsRules.KolAmount : pointsRules.InviterAmount;;
             actionPoints.Decimal = pointsRules.Decimal;
         }
         resp.PointDetails = actionPointList;
