@@ -92,6 +92,7 @@ public class PointsService : IPointsService, ISingletonDependency
 
         var actionPointList =
             _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data);
+
         resp.PointDetails = actionPointList;
 
         var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain);
@@ -102,6 +103,18 @@ public class PointsService : IPointsService, ISingletonDependency
             resp.DappName = GetDappDto(domainInfo.DappName).DappName;
             resp.Domain = domainInfo.Domain;
         }
+
+        var kolFollowersCountDic =
+            await _pointsProvider.GetKolFollowersCountDicAsync(new List<string> { input.Domain });
+
+        if (kolFollowersCountDic.TryGetValue(input.Domain, out var followersNumber))
+        {
+            resp.FollowersNumber = followersNumber;
+        }
+
+        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "SelfIncrease");
+        resp.Rate = pointsRules.KolAmount;
+        resp.Decimal = pointsRules.Decimal;
 
         _logger.LogInformation("GetRankingDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));
         return resp;
@@ -121,11 +134,27 @@ public class PointsService : IPointsService, ISingletonDependency
         }
 
         resp.TotalCount = pointsList.TotalCount;
+
+        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "SelfIncrease");
+        var domains = pointsList.IndexList
+            .Select(p => p.Domain).Distinct()
+            .ToList();
+        var kolFollowersCountDic = await _pointsProvider.GetKolFollowersCountDicAsync(domains);
+
         var items = new List<PointsEarnedListDto>();
         foreach (var operatorPointSumIndex in pointsList.IndexList)
         {
             var pointsEarnedListDto =
                 _objectMapper.Map<OperatorPointSumIndex, PointsEarnedListDto>(operatorPointSumIndex);
+
+            if (kolFollowersCountDic.TryGetValue(operatorPointSumIndex.Domain, out var followersNumber))
+            {
+                pointsEarnedListDto.FollowersNumber = followersNumber;
+            }
+
+            pointsEarnedListDto.Rate = pointsRules.KolAmount;
+            pointsEarnedListDto.Decimal = pointsRules.Decimal;
+
             pointsEarnedListDto.DappName = GetDappDto(operatorPointSumIndex.DappName).DappName;
             pointsEarnedListDto.Icon = GetDappDto(operatorPointSumIndex.DappName).Icon;
             items.Add(pointsEarnedListDto);
@@ -178,6 +207,18 @@ public class PointsService : IPointsService, ISingletonDependency
             resp.DappName = GetDappDto(domainInfo.DappName).DappName;
             resp.Domain = domainInfo.Domain;
         }
+        var kolFollowersCountDic =
+            await _pointsProvider.GetKolFollowersCountDicAsync(new List<string> { input.Domain });
+
+        if (kolFollowersCountDic.TryGetValue(input.Domain, out var followersNumber))
+        {
+            resp.FollowersNumber = followersNumber;
+        }
+
+        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "SelfIncrease");
+        resp.Rate = pointsRules.KolAmount;
+        resp.Decimal = pointsRules.Decimal;
+        
 
         _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(resp));
         return resp;
