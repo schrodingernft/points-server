@@ -45,7 +45,7 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
         if (!input.Keyword.IsNullOrWhiteSpace())
         {
             var shouldQuery = new List<Func<QueryContainerDescriptor<OperatorPointSumIndex>, QueryContainer>>();
-            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Domain).Value(input.Keyword)));
+            shouldQuery.Add(q => q.Term(i => i.Field("domain.keyword").Value(input.Keyword)));
             shouldQuery.Add(q => q.Term(i => i.Field(f => f.Address).Value(input.Keyword)));
             mustQuery.Add(q => q.Bool(b => b.Should(shouldQuery)));
         }
