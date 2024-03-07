@@ -201,14 +201,14 @@ public class PointsService : IPointsService, ISingletonDependency
         }
 
         var actionPointList =
-            _objectMapper.Map<List<RankingDetailIndexerDto>, List<EarnedPointDto>>(actionRecordPoints.Data);
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<EarnedPointDto>>(actionRecordPoints.Data).OrderBy(o => o.Symbol).ToList();
 
         foreach (var earnedPointDto in actionPointList)
         {
             PointsRules pointsRules;
             switch (earnedPointDto.Action)
             {
-                case Constants.JoinAction or Constants.ApplyToBeAdvocateAction:
+                case Constants.JoinAction:
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
                     if (pointsRules == null) continue;
                     earnedPointDto.Decimal = pointsRules.Decimal;
