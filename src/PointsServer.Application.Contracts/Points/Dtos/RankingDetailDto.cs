@@ -22,7 +22,7 @@ public class ActionPoints
 public class EarnedPointDto : ActionPoints
 {
     public decimal Rate { get; set; }
-    public long Updatetime { get; set; }
+    public long UpdateTime { get; set; }
     public string DisplayName { get; set; }
 }
 

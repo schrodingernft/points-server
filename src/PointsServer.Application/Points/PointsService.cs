@@ -191,6 +191,7 @@ public class PointsService : IPointsService, ISingletonDependency
     {
         _logger.LogInformation("GetMyPointsAsync, req:{req}", JsonConvert.SerializeObject(input));
         var queryInput = _objectMapper.Map<GetPointsEarnedDetailInput, GetOperatorPointsActionSumInput>(input);
+        queryInput.Role = OperatorRole.User;
         var actionRecordPoints = await _pointsProvider.GetOperatorPointsActionSumAsync(queryInput);
 
         var resp = new MyPointDetailsDto();
@@ -209,17 +210,20 @@ public class PointsService : IPointsService, ISingletonDependency
             {
                 case Constants.JoinAction or Constants.ApplyToBeAdvocateAction:
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    if (pointsRules == null) continue;
                     earnedPointDto.Decimal = pointsRules.Decimal;
                     earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
                     break;
                 case Constants.SelfIncreaseAction:
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    if (pointsRules == null) continue;
                     earnedPointDto.Rate = pointsRules.UserAmount;
                     earnedPointDto.Decimal = pointsRules.Decimal;
                     earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
                     break;
                 default:
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, Constants.DefaultAction);
+                    if (pointsRules == null) continue;
                     earnedPointDto.Decimal = pointsRules.Decimal;
                     earnedPointDto.DisplayName = Strings.Format(pointsRules.DisplayNamePattern, earnedPointDto.Action);
                     break;

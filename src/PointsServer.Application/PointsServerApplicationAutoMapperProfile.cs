@@ -1,5 +1,7 @@
 using AutoMapper;
+using Microsoft.VisualBasic.CompilerServices;
 using PointsServer.Apply.Etos;
+using PointsServer.Common;
 using PointsServer.DApps.Dtos;
 using PointsServer.Grains.Grain.Operator;
 using PointsServer.Options;
@@ -33,6 +35,7 @@ public class PointsServerApplicationAutoMapperProfile : Profile
         CreateMap<RankingDetailIndexerDto, EarnedPointDto>()
             .ForMember(t => t.Action, m => m.MapFrom(f => f.ActionName))
             .ForMember(t => t.Symbol, m => m.MapFrom(f => f.PointsName))
-            .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount));
+            .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount))
+            .ForMember(t => t.UpdateTime, m => m.MapFrom(f => f.UpdateTime.ToUtcSeconds()));
     }
 }
