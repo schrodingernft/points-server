@@ -113,6 +113,8 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
             //query indexer
             if (!relationshipFlag)
             {
+                _logger.LogInformation(
+                    "RecordPointsSumAsync: local Es not find,to indexer find begin, domain: {domain}", operatorPointSumIndex.Domain);
                 var operatorDomainDto = await _pointsProvider.GetOperatorDomainInfoAsync(new GetOperatorDomainInfoInput()
                 {
                     Domain = operatorPointSumIndex.Domain
@@ -122,7 +124,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
                     operatorPointSumIndex.DappName = operatorDomainDto.DappId;
                 }
                 _logger.LogInformation(
-                    "RecordPointsSumAsync: local Es not find,to indexer find, domain: {domain}", operatorDomainDto.Domain);
+                    "RecordPointsSumAsync: local Es not find,to indexer find end, domain: {domain}", operatorDomainDto.Domain);
             }
 
             pointsSumIndexList.Add(operatorPointSumIndex);
