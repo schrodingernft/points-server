@@ -209,15 +209,18 @@ public class PointsService : IPointsService, ISingletonDependency
             {
                 case Constants.JoinAction or Constants.ApplyToBeAdvocateAction:
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    earnedPointDto.Decimal = pointsRules.Decimal;
                     earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
                     break;
                 case Constants.SelfIncreaseAction:
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
                     earnedPointDto.Rate = pointsRules.UserAmount;
+                    earnedPointDto.Decimal = pointsRules.Decimal;
                     earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
                     break;
                 default:
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, Constants.DefaultAction);
+                    earnedPointDto.Decimal = pointsRules.Decimal;
                     earnedPointDto.DisplayName = Strings.Format(pointsRules.DisplayNamePattern, earnedPointDto.Action);
                     break;
             }
