@@ -9,10 +9,30 @@ public class RankingDetailIndexerQueryDto
     public RankingDetailIndexerListDto GetPointsSumByAction { get; set; }
 }
 
+public class OperatorDomainIndexerQueryDto
+{
+    public OperatorDomainDto GetOperatorDomainDto { get; set; }
+}
+
 public class RankingDetailIndexerListDto
 {
     public List<RankingDetailIndexerDto> Data { get; set; }
     public long TotalRecordCount { get; set; }
+}
+
+public class OperatorDomainDto
+{
+    public  string Id { get; set; }  
+    
+    public string Domain { get; set; }
+    
+    public string DepositAddress { get; set; }
+    
+    public string InviterAddress { get; set; }
+    
+    public string DappId { get; set; }  
+    
+    public DateTime CreateTime { get; set; } 
 }
 
 public class RankingDetailIndexerDto

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using PointsServer.Common;
 using PointsServer.Grains.State.Worker;
 using PointsServer.Points;
+using PointsServer.Points.Dtos;
+using PointsServer.Points.Provider;
 using PointsServer.Worker.Provider;
 using PointsServer.Worker.Provider.Dtos;
 using Volo.Abp.DependencyInjection;
@@ -22,6 +24,8 @@ public interface IPointsSumService
 public class PointsSumService : IPointsSumService, ISingletonDependency
 {
     private readonly IPointsIndexerProvider _pointsIndexerProvider;
+    private readonly IPointsProvider _pointsProvider;
+
     private readonly LatestExecuteTimeProvider _latestExecuteTimeProvider;
     private readonly IObjectMapper _objectMapper;
     private readonly INESTRepository<OperatorPointsSumIndex, string> _repository;
@@ -31,13 +35,14 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
     public PointsSumService(IPointsIndexerProvider pointsIndexerProvider,
         LatestExecuteTimeProvider latestExecuteTimeProvider,
         IObjectMapper objectMapper, INESTRepository<OperatorPointsSumIndex, string> repository,
-        IPointsSumProvider pointsSumProvider, ILogger<PointsSumService> logger)
+        IPointsSumProvider pointsSumProvider, IPointsProvider pointsProvider, ILogger<PointsSumService> logger)
     {
         _pointsIndexerProvider = pointsIndexerProvider;
         _latestExecuteTimeProvider = latestExecuteTimeProvider;
         _objectMapper = objectMapper;
         _repository = repository;
         _pointsSumProvider = pointsSumProvider;
+        _pointsProvider = pointsProvider;
         _logger = logger;
     }
 
@@ -99,10 +104,25 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
                     break;
             }
-
+            
             if (relationshipFlag)
             {
                 operatorPointSumIndex.DappName = operatorDomain.DappName;
+            }
+            
+            //query indexer
+            if (!relationshipFlag)
+            {
+                var operatorDomainDto = await _pointsProvider.GetOperatorDomainInfoAsync(new GetOperatorDomainInfoInput()
+                {
+                    Domain = operatorPointSumIndex.Domain
+                });
+                if (operatorDomainDto != null)
+                {
+                    operatorPointSumIndex.DappName = operatorDomainDto.DappId;
+                }
+                _logger.LogInformation(
+                    "RecordPointsSumAsync: local Es not find,to indexer find, domain: {domain}", operatorDomainDto.Domain);
             }
 
             pointsSumIndexList.Add(operatorPointSumIndex);

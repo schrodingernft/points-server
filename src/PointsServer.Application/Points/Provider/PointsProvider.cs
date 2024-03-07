@@ -23,6 +23,9 @@ public interface IPointsProvider
     public Task<Dictionary<string, long>> GetKolFollowersCountDicAsync(List<string> domainList);
 
     Task<RankingDetailIndexerListDto> GetOperatorPointsActionSumAsync(GetOperatorPointsActionSumInput queryInput);
+    
+    public Task<OperatorDomainDto> GetOperatorDomainInfoAsync(GetOperatorDomainInfoInput queryInput);
+
 }
 
 public class PointsProvider : IPointsProvider, ISingletonDependency
@@ -169,6 +172,29 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
         });
 
         return indexerResult.GetPointsSumByAction;
+    }
+
+    public async Task<OperatorDomainDto> GetOperatorDomainInfoAsync(GetOperatorDomainInfoInput queryInput)
+    {
+        var indexerResult = await _graphQlHelper.QueryAsync<OperatorDomainIndexerQueryDto>(new GraphQLRequest
+        {
+            Query =
+                @"query($domain:String!){
+                    operatorDomainInfo(input: {domain:$domain}){
+                        id,
+                        domain,
+                        depositAddress,
+                        inviterAddress,
+    					dappId               
+                }
+            }",
+            Variables = new
+            {
+                domain = queryInput.Domain
+            }
+        });
+
+        return indexerResult.GetOperatorDomainDto;
     }
 
     private Expression<Func<OperatorPointsSumIndex, object>> GetSortBy(SortingKeywordType sortingKeyWord)
