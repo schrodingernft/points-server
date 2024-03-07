@@ -205,7 +205,7 @@ public class PointsService : IPointsService, ISingletonDependency
             PointsRules pointsRules;
             switch (earnedPointDto.Action)
             {
-                case Constants.JoinAction:
+                case Constants.JoinAction or Constants.ApplyToBeAdvocateAction:
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
                     earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
                     break;
@@ -213,8 +213,6 @@ public class PointsService : IPointsService, ISingletonDependency
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
                     earnedPointDto.Rate = pointsRules.UserAmount;
                     earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
-                    break;
-                case Constants.ApplyToBeAdvocateAction:
                     break;
                 default:
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, Constants.DefaultAction);
