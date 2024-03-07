@@ -57,7 +57,7 @@ public class PointsService : IPointsService, ISingletonDependency
         resp.TotalCount = pointsList.TotalCount;
         var items = new List<RankingListDto>();
 
-        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "RegisterIncrement");
+        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, "SelfIncrease");
         var domains = pointsList.IndexList
             .Select(p => p.Domain).Distinct()
             .ToList();
@@ -71,6 +71,7 @@ public class PointsService : IPointsService, ISingletonDependency
             }
 
             dto.Rate = pointsRules.KolAmount;
+            dto.Decimal = pointsRules.Decimal;
             items.Add(dto);
         }
 
@@ -127,7 +128,8 @@ public class PointsService : IPointsService, ISingletonDependency
         var items = new List<PointsEarnedListDto>();
         foreach (var operatorPointSumIndex in pointsList.IndexList)
         {
-            var pointsEarnedListDto = _objectMapper.Map<OperatorPointSumIndex, PointsEarnedListDto>(operatorPointSumIndex);
+            var pointsEarnedListDto =
+                _objectMapper.Map<OperatorPointSumIndex, PointsEarnedListDto>(operatorPointSumIndex);
             pointsEarnedListDto.DappName = GetDappDto(operatorPointSumIndex.DappName).DappName;
             pointsEarnedListDto.Icon = GetDappDto(operatorPointSumIndex.DappName).Icon;
             items.Add(pointsEarnedListDto);
@@ -181,7 +183,7 @@ public class PointsService : IPointsService, ISingletonDependency
             resp.Domain = domainInfo.Domain;
         }
 
-        _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));
+        _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(resp));
         return resp;
     }
 

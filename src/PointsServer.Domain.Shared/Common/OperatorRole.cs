@@ -4,5 +4,6 @@ public enum OperatorRole
 {
     Inviter,
     Kol,
-    User
+    User,
+    All = -1
 }

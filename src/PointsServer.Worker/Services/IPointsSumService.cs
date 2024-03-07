@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Indexing.Elasticsearch;
+using Microsoft.Extensions.Logging;
 using PointsServer.Common;
 using PointsServer.Grains.State.Worker;
 using PointsServer.Points;
@@ -25,18 +26,19 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
     private readonly IObjectMapper _objectMapper;
     private readonly INESTRepository<OperatorPointSumIndex, string> _repository;
     private readonly IPointsSumProvider _pointsSumProvider;
-
+    private readonly ILogger<PointsSumService> _logger;
 
     public PointsSumService(IPointsIndexerProvider pointsIndexerProvider,
         LatestExecuteTimeProvider latestExecuteTimeProvider,
         IObjectMapper objectMapper, INESTRepository<OperatorPointSumIndex, string> repository,
-        IPointsSumProvider pointsSumProvider)
+        IPointsSumProvider pointsSumProvider, ILogger<PointsSumService> logger)
     {
         _pointsIndexerProvider = pointsIndexerProvider;
         _latestExecuteTimeProvider = latestExecuteTimeProvider;
         _objectMapper = objectMapper;
         _repository = repository;
         _pointsSumProvider = pointsSumProvider;
+        _logger = logger;
     }
 
     public async Task RecordPointsSumAsync()
@@ -108,6 +110,8 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         if (!pointsSumIndexList.IsNullOrEmpty())
         {
+            _logger.LogInformation(
+                "BulkAddOrUpdateAsync, count: {count}", pointsSumIndexList.Count);
             await _repository.BulkAddOrUpdateAsync(pointsSumIndexList);
         }
 

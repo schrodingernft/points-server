@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,8 @@ public class PointsSumWorker : AsyncPeriodicBackgroundWorkerBase
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
     {
+        _logger.LogInformation(
+            "begin to execute PointsSumWorker, time: {time}", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
         await _pointsSumService.RecordPointsSumAsync();
     }
 }

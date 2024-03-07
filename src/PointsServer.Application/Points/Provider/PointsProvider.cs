@@ -77,24 +77,19 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
         mustQuery.Add(q => q.Terms(i =>
             i.Field(f => f.DappName).Terms(input.DappName)));
 
-        if (input.Type == SearchType.Inviter)
-        {
-            mustQuery.Add(q => q.Term(i =>
-                i.Field(f => f.Role).Value(OperatorRole.Inviter)));
-        }
-        else if (input.Type == SearchType.Kol)
-        {
-            mustQuery.Add(q => q.Term(i =>
-                i.Field(f => f.Role).Value(OperatorRole.Kol)));
-        }
-        else
+        if (input.Type == OperatorRole.All)
         {
             var shouldQuery = new List<Func<QueryContainerDescriptor<OperatorPointSumIndex>, QueryContainer>>();
             shouldQuery.Add(q => q.Term(i => i.Field(f => f.Role).Value(OperatorRole.Kol)));
             shouldQuery.Add(q => q.Term(i => i.Field(f => f.Role).Value(OperatorRole.Inviter)));
             mustQuery.Add(q => q.Bool(b => b.Should(shouldQuery)));
         }
-
+        else
+        {
+            mustQuery.Add(q => q.Term(i =>
+                i.Field(f => f.Role).Value(input.Type)));
+        }
+        
         QueryContainer Filter(QueryContainerDescriptor<OperatorPointSumIndex> f) => f.Bool(b => b.Must(mustQuery));
 
         var sortType = input.Sorting == "DESC" ? SortOrder.Descending : SortOrder.Ascending;
