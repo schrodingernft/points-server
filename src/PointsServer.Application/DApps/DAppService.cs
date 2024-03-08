@@ -60,8 +60,8 @@ public class DAppService : IDAppService
         return role switch
         {
             OperatorRole.All => "All",
-            OperatorRole.Inviter => "Advocate",
-            OperatorRole.Kol => "Referrer",
+            OperatorRole.Inviter => "Referrer",
+            OperatorRole.Kol => "Advocate",
             OperatorRole.User => "User",
             _ => "Unknown"
         };
