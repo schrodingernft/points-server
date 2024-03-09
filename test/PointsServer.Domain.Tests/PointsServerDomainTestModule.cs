@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Volo.Abp;
 using Volo.Abp.Modularity;
-using Volo.Abp.Threading;
 
 namespace PointsServer;
 
@@ -25,12 +24,9 @@ public class PointsServerDomainTestModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         Configure<IndexCreateOption>(x => { x.AddModule(typeof(PointsServerDomainModule)); });
-        
+
         // Do not modify this!!!
-        context.Services.Configure<EsEndpointOption>(options =>
-        {
-            options.Uris = new List<string> { "http://127.0.0.1:9200" };
-        });
+        context.Services.Configure<EsEndpointOption>(options => { options.Uris = new List<string> { "http://127.0.0.1:9200" }; });
 
         context.Services.Configure<IndexSettingOptions>(options =>
         {
@@ -43,7 +39,7 @@ public class PointsServerDomainTestModule : AbpModule
             new NewtonsoftJsonSerializer()));
         context.Services.AddScoped<IGraphQLClient>(sp => sp.GetRequiredService<GraphQLHttpClient>());
     }
-    
+
     public override void OnApplicationShutdown(ApplicationShutdownContext context)
     {
         var elasticIndexService = context.ServiceProvider.GetRequiredService<IElasticIndexService>();
@@ -68,5 +64,4 @@ public class PointsServerDomainTestModule : AbpModule
                            !type.IsAbstract && type.IsClass && compareType != type)
             .Cast<Type>().ToList();
     }
-
 }
