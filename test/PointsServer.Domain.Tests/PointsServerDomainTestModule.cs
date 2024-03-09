@@ -35,7 +35,7 @@ public class PointsServerDomainTestModule : AbpModule
             options.Refresh = Refresh.True;
             options.IndexPrefix = "PointsServertest";
         });
-        context.Services.AddSingleton(new GraphQLHttpClient("https://indexer.pixiepoints.io/AElfIndexer_Points/PointsIndexerPluginSchema/graphql",
+        context.Services.AddSingleton(new GraphQLHttpClient("https://test-indexer.pixiepoints.io/AElfIndexer_Points/PointsIndexerPluginSchema/graphql",
             new NewtonsoftJsonSerializer()));
         context.Services.AddScoped<IGraphQLClient>(sp => sp.GetRequiredService<GraphQLHttpClient>());
     }
