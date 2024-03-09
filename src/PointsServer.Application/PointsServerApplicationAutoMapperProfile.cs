@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.VisualBasic.CompilerServices;
 using PointsServer.Apply.Etos;
 using PointsServer.Common;
 using PointsServer.DApps.Dtos;
@@ -22,20 +21,22 @@ public class PointsServerApplicationAutoMapperProfile : Profile
         CreateMap<DappInfo, DAppDto>().ReverseMap();
         CreateMap<GetRankingDetailInput, GetOperatorPointsActionSumInput>();
         CreateMap<GetRankingListInput, GetOperatorPointsSumIndexListInput>();
-        CreateMap<OperatorPointSumIndex, RankingListDto>();
+        CreateMap<OperatorPointsSumIndex, RankingListDto>();
         CreateMap<GetPointsEarnedListInput, GetOperatorPointsSumIndexListByAddressInput>().ForMember(
             destination => destination.Type,
             opt => opt.MapFrom(source => source.Role));
-        CreateMap<OperatorPointSumIndex, PointsEarnedListDto>();
+        CreateMap<OperatorPointsSumIndex, PointsEarnedListDto>();
         CreateMap<GetPointsEarnedDetailInput, GetOperatorPointsActionSumInput>();
         CreateMap<RankingDetailIndexerDto, ActionPoints>()
             .ForMember(t => t.Action, m => m.MapFrom(f => f.ActionName))
             .ForMember(t => t.Symbol, m => m.MapFrom(f => f.PointsName))
-            .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount));
+            .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount))
+            .ForMember(t => t.CreateTime, m => m.MapFrom(f => f.CreateTime.ToUtcMilliSeconds()))
+            .ForMember(t => t.UpdateTime, m => m.MapFrom(f => f.UpdateTime.ToUtcMilliSeconds()));
         CreateMap<RankingDetailIndexerDto, EarnedPointDto>()
             .ForMember(t => t.Action, m => m.MapFrom(f => f.ActionName))
             .ForMember(t => t.Symbol, m => m.MapFrom(f => f.PointsName))
             .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount))
-            .ForMember(t => t.UpdateTime, m => m.MapFrom(f => f.UpdateTime.ToUtcSeconds()));
+            .ForMember(t => t.UpdateTime, m => m.MapFrom(f => f.UpdateTime.ToUtcMilliSeconds()));
     }
 }

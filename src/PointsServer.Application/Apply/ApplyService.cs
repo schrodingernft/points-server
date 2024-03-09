@@ -14,6 +14,8 @@ using PointsServer.Common.AElfSdk;
 using PointsServer.DApps.Provider;
 using PointsServer.Grains.Grain.Operator;
 using PointsServer.Options;
+using PointsServer.Points.Dtos;
+using PointsServer.Points.Provider;
 using PointsServer.Users.Provider;
 using Portkey.Contracts.CA;
 using Volo.Abp;
@@ -33,11 +35,12 @@ public class ApplyService : PointsPlatformAppService, IApplyService
     private readonly IContractProvider _contractProvider;
     private readonly ApplyConfirmOptions _applyConfirmOptions;
     private readonly ILogger<ApplyService> _logger;
+    private readonly IPointsProvider _pointsProvider;
 
     public ApplyService(IOperatorDomainProvider operatorDomainProvider, IClusterClient clusterClient,
         IDistributedEventBus distributedEventBus, IObjectMapper objectMapper,
         IUserInformationProvider userInformationProvider, IContractProvider contractProvider,
-        IOptionsSnapshot<ApplyConfirmOptions> applyConfirmOptions,ILogger<ApplyService> logger)
+        IOptionsSnapshot<ApplyConfirmOptions> applyConfirmOptions,IPointsProvider pointsProvider, ILogger<ApplyService> logger)
     {
         _operatorDomainProvider = operatorDomainProvider;
         _clusterClient = clusterClient;
@@ -47,6 +50,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
         _contractProvider = contractProvider;
         _applyConfirmOptions = applyConfirmOptions.Value;
         _logger = logger;
+        _pointsProvider = pointsProvider;
     }
 
     public async Task<ApplyCheckResultDto> ApplyCheckAsync(ApplyCheckInput input)
@@ -132,6 +136,22 @@ public class ApplyService : PointsPlatformAppService, IApplyService
         {
             domainCheckDto.Exists = true;
         }
+
+        if (!domainCheckDto.Exists)
+        {
+            //find indexer
+            var operatorDomainDto = await _pointsProvider.GetOperatorDomainInfoAsync(new GetOperatorDomainInfoInput()
+            {
+                Domain = input.Domain
+            });
+            if (operatorDomainDto != null)
+            {
+                domainCheckDto.Exists = true;
+                _logger.LogInformation(
+                    "DomainCheckAsync:local Es not find,to indexer find, domain: {domain}", operatorDomainDto.Domain);
+            }
+        }
+
 
         return domainCheckDto;
     }

@@ -9,7 +9,7 @@ public class PointsServerWorkerAutoMapperProfile : Profile
 {
     public PointsServerWorkerAutoMapperProfile()
     {
-        CreateMap<PointsSumDto, OperatorPointSumIndex>()
+        CreateMap<PointsSumDto, OperatorPointsSumIndex>()
             .ForMember(t => t.CreateTime, m => m.MapFrom(f => f.CreateTime.ToUtcMilliSeconds()))
             .ForMember(t => t.UpdateTime, m => m.MapFrom(f => f.UpdateTime.ToUtcMilliSeconds()));
         ;

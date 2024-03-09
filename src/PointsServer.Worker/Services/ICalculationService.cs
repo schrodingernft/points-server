@@ -22,7 +22,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
     private readonly ILogger<CalculationService> _logger;
     private readonly ICalculationProvider _calculationProvider;
     private readonly PointsCalculateOptions _options;
-    private List<OperatorPointSumIndex> _allOperatorPointSumIndices = new();
+    private List<OperatorPointsSumIndex> _allOperatorPointSumIndices = new();
 
     public CalculationService(ILogger<CalculationService> logger, ICalculationProvider calculationProvider,
         IOptionsSnapshot<PointsCalculateOptions> options)
@@ -64,7 +64,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         var users = _allOperatorPointSumIndices
             .Where(t => t.Role == OperatorRole.User && !t.KolAddress.IsNullOrEmpty() &&
                         !t.InviterAddress.IsNullOrEmpty()).ToList();
-        var inviters = users.GroupBy(t => t.InviterAddress).ToList();
+        var inviters = users.GroupBy(t => new { t.InviterAddress, t.Domain }).ToList();
 
         //calculate inviter
         Parallel.ForEach(inviters, new ParallelOptions
@@ -82,7 +82,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
             .Where(t => t.Role == OperatorRole.User && !t.KolAddress.IsNullOrEmpty() &&
                         t.InviterAddress.IsNullOrEmpty()).ToList();
 
-        var kols = users.GroupBy(t => t.KolAddress).ToList();
+        var kols = users.GroupBy(t => new { t.KolAddress, t.Domain }).ToList();
 
         // calculate kols with empty invitor
         Parallel.ForEach(kols, new ParallelOptions
@@ -91,9 +91,9 @@ public class CalculationService : ICalculationService, ISingletonDependency
         }, (kolGroupItem, _) => { CalculateKol(kolGroupItem, timeStamp); });
     }
 
-    private void CalculateInviter(IGrouping<string, OperatorPointSumIndex> inviter, long timeStamp)
+    private void CalculateInviter(IGrouping<dynamic, OperatorPointsSumIndex> inviter, long timeStamp)
     {
-        var allUsers = new List<OperatorPointSumIndex>();
+        var allUsers = new List<OperatorPointsSumIndex>();
         long inviterInterval = 0;
         // inviter.Key
         foreach (var user in inviter)
@@ -102,14 +102,18 @@ public class CalculationService : ICalculationService, ISingletonDependency
         }
 
         // group by to cal kol
-        var kols = allUsers.GroupBy(t => t.KolAddress).ToList();
+        var kols = allUsers.GroupBy(t => new { t.KolAddress, t.Domain }).ToList();
+
         inviterInterval += CalculateKols(kols, timeStamp);
 
         // get inviter and cal
-        var inviterIndex = _allOperatorPointSumIndices.FirstOrDefault(t => t.Address == inviter.Key);
+        var inviterIndex = _allOperatorPointSumIndices.FirstOrDefault(t =>
+            t.Address == inviter.Key.InviterAddress && t.Domain == inviter.Key.Domain);
         if (inviterIndex == null)
         {
-            _logger.LogWarning("inviter index not exist, address: {address}", inviter.Key);
+            string address = inviter.Key.InviterAddress;
+            string domain = inviter.Key.Domain;
+            _logger.LogWarning("inviter index not exist, address:{address}, domain:{domain}", address, domain);
             return;
         }
 
@@ -118,7 +122,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         inviterIndex.IncrementalSettlementTime = timeStamp;
     }
 
-    private long CalculateKols(IEnumerable<IGrouping<string, OperatorPointSumIndex>> kols, long timeStamp)
+    private long CalculateKols(IEnumerable<IGrouping<dynamic, OperatorPointsSumIndex>> kols, long timeStamp)
     {
         long inviterInterval = 0;
         foreach (var kol in kols)
@@ -133,10 +137,14 @@ public class CalculationService : ICalculationService, ISingletonDependency
 
             inviterInterval += kolInterval;
             // get kol and cal
-            var kolIndex = _allOperatorPointSumIndices.FirstOrDefault(t => t.Address == kol.Key);
+            var kolIndex =
+                _allOperatorPointSumIndices.FirstOrDefault(t =>
+                    t.Address == kol.Key.KolAddress && t.Domain == kol.Key.Domain);
             if (kolIndex == null)
             {
-                _logger.LogWarning("kol index not exist, address: {address}", kol.Key);
+                string address = kol.Key.KolAddress;
+                string domain = kol.Key.Domain;
+                _logger.LogWarning("kol index not exist, address:{address}, domain:{domain}", address, domain);
                 continue;
             }
 
@@ -148,7 +156,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         return inviterInterval;
     }
 
-    private long CalculateKol(IGrouping<string, OperatorPointSumIndex> kol, long timeStamp)
+    private long CalculateKol(IGrouping<dynamic, OperatorPointsSumIndex> kol, long timeStamp)
     {
         long kolInterval = 0;
         // kol key
@@ -159,10 +167,14 @@ public class CalculationService : ICalculationService, ISingletonDependency
         }
 
         // get kol and cal
-        var kolIndex = _allOperatorPointSumIndices.FirstOrDefault(t => t.Address == kol.Key);
+        var kolIndex =
+            _allOperatorPointSumIndices.FirstOrDefault(t =>
+                t.Address == kol.Key.KolAddress && t.Domain == kol.Key.Domain);
         if (kolIndex == null)
         {
-            _logger.LogWarning("kol index not exist, address: {address}", kol.Key);
+            string address = kol.Key.KolAddress;
+            string domain = kol.Key.Domain;
+            _logger.LogWarning("kol index not exist, address:{address}, domain:{domain}", address, domain);
             return 0;
         }
 
@@ -184,7 +196,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         }
     }
 
-    private long CalculateUser(OperatorPointSumIndex user, long timeStamp)
+    private long CalculateUser(OperatorPointsSumIndex user, long timeStamp)
     {
         var lastAccumulateTime =
             user.IncrementalSettlementTime == 0 ? user.UpdateTime : user.IncrementalSettlementTime;
@@ -198,7 +210,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
         return intervalTime;
     }
 
-    private async Task GetOperatorPointSumListAsync(List<OperatorPointSumIndex> operatorPointSumIndices,
+    private async Task GetOperatorPointSumListAsync(List<OperatorPointsSumIndex> operatorPointSumIndices,
         int skipCount, int maxResultCount)
     {
         var operatorPointSum =

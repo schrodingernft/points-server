@@ -12,6 +12,7 @@ using PointsServer.Common.GraphQL;
 using PointsServer.Grains;
 using PointsServer.MongoDB;
 using PointsServer.Options;
+using PointsServer.Points.Provider;
 using PointsServer.Worker.Options;
 using PointsServer.Worker.Provider;
 using PointsServer.Worker.Services;
@@ -52,6 +53,7 @@ public class PointsServerWorkerModule : AbpModule
         context.Services.AddSingleton<IPointsSumProvider, PointsSumProvider>();
         context.Services.AddSingleton<ILatestExecuteTimeProvider, LatestExecuteTimeProvider>();
         context.Services.AddSingleton<IGraphQlHelper, GraphQlHelper>();
+        context.Services.AddSingleton<IPointsProvider, PointsProvider>();
         ConfigureGraphQl(context, configuration);
         ConfigureOrleans(context, configuration);
     }
@@ -91,9 +93,9 @@ public class PointsServerWorkerModule : AbpModule
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
-        context.AddBackgroundWorkerAsync<CalculationWorker>();
-        context.AddBackgroundWorkerAsync<PointsSumWorker>();
-        context.AddBackgroundWorkerAsync<ApplyStatusWorker>();
+        AsyncHelper.RunSync(async () => await context.AddBackgroundWorkerAsync<CalculationWorker>());
+        AsyncHelper.RunSync(async () => await context.AddBackgroundWorkerAsync<PointsSumWorker>());
+        AsyncHelper.RunSync(async () => await context.AddBackgroundWorkerAsync<ApplyStatusWorker>());
         StartOrleans(context.ServiceProvider);
     }
 

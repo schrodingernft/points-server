@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using PointsServer.Common;
 using PointsServer.Grains.State.Worker;
 using PointsServer.Points;
+using PointsServer.Points.Dtos;
+using PointsServer.Points.Provider;
 using PointsServer.Worker.Provider;
 using PointsServer.Worker.Provider.Dtos;
 using Volo.Abp.DependencyInjection;
@@ -22,22 +24,25 @@ public interface IPointsSumService
 public class PointsSumService : IPointsSumService, ISingletonDependency
 {
     private readonly IPointsIndexerProvider _pointsIndexerProvider;
+    private readonly IPointsProvider _pointsProvider;
+
     private readonly LatestExecuteTimeProvider _latestExecuteTimeProvider;
     private readonly IObjectMapper _objectMapper;
-    private readonly INESTRepository<OperatorPointSumIndex, string> _repository;
+    private readonly INESTRepository<OperatorPointsSumIndex, string> _repository;
     private readonly IPointsSumProvider _pointsSumProvider;
     private readonly ILogger<PointsSumService> _logger;
 
     public PointsSumService(IPointsIndexerProvider pointsIndexerProvider,
         LatestExecuteTimeProvider latestExecuteTimeProvider,
-        IObjectMapper objectMapper, INESTRepository<OperatorPointSumIndex, string> repository,
-        IPointsSumProvider pointsSumProvider, ILogger<PointsSumService> logger)
+        IObjectMapper objectMapper, INESTRepository<OperatorPointsSumIndex, string> repository,
+        IPointsSumProvider pointsSumProvider, IPointsProvider pointsProvider, ILogger<PointsSumService> logger)
     {
         _pointsIndexerProvider = pointsIndexerProvider;
         _latestExecuteTimeProvider = latestExecuteTimeProvider;
         _objectMapper = objectMapper;
         _repository = repository;
         _pointsSumProvider = pointsSumProvider;
+        _pointsProvider = pointsProvider;
         _logger = logger;
     }
 
@@ -50,7 +55,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         var pointsSumList =
             await _pointsIndexerProvider.GetPointsSumListAsync(latestExecuteTime, now);
-        var pointsSumIndexList = new List<OperatorPointSumIndex>();
+        var pointsSumIndexList = new List<OperatorPointsSumIndex>();
 
         var userAddresses = pointsSumList
             .Where(pointSum => pointSum.Role == OperatorRole.User)
@@ -77,7 +82,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         foreach (var pointsSumDto in pointsSumList)
         {
-            var operatorPointSumIndex = _objectMapper.Map<PointsSumDto, OperatorPointSumIndex>(pointsSumDto);
+            var operatorPointSumIndex = _objectMapper.Map<PointsSumDto, OperatorPointsSumIndex>(pointsSumDto);
             var relationshipFlag = domainDic.TryGetValue(operatorPointSumIndex.Domain, out var operatorDomain);
             switch (operatorPointSumIndex.Role)
             {
@@ -99,10 +104,27 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
                     break;
             }
-
+            
             if (relationshipFlag)
             {
                 operatorPointSumIndex.DappName = operatorDomain.DappName;
+            }
+            
+            //query indexer
+            if (!relationshipFlag)
+            {
+                _logger.LogInformation(
+                    "RecordPointsSumAsync: local Es not find,to indexer find begin, domain: {domain}", operatorPointSumIndex.Domain);
+                var operatorDomainDto = await _pointsProvider.GetOperatorDomainInfoAsync(new GetOperatorDomainInfoInput()
+                {
+                    Domain = operatorPointSumIndex.Domain
+                });
+                if (operatorDomainDto != null)
+                {
+                    operatorPointSumIndex.DappName = operatorDomainDto.DappId;
+                    _logger.LogInformation(
+                        "RecordPointsSumAsync: local Es not find,to indexer find end, domain: {domain}", operatorDomainDto.Domain);
+                }
             }
 
             pointsSumIndexList.Add(operatorPointSumIndex);
@@ -115,10 +137,13 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
             await _repository.BulkAddOrUpdateAsync(pointsSumIndexList);
         }
 
+        var latestExecuteMaxTime = pointsSumIndexList.Select(point => point.UpdateTime).Max();
+        _logger.LogInformation(
+            "LatestExecuteMaxTime, time: {time}", latestExecuteMaxTime);
         await _latestExecuteTimeProvider.UpdateLatestExecuteTimeAsync(new WorkerOptionState
         {
             Type = type,
-            LatestExecuteTime = now.ToUtcMilliSeconds()
+            LatestExecuteTime = latestExecuteMaxTime
         });
     }
 }
