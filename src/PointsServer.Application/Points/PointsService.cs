@@ -232,10 +232,10 @@ public class PointsService : IPointsService, ISingletonDependency
         return resp;
     }
 
-    public async Task<MyPointDetailsDto> GetMyPointsAsync(GetPointsEarnedDetailInput input)
+    public async Task<MyPointDetailsDto> GetMyPointsAsync(GetMyPointsInput input)
     {
         _logger.LogInformation("GetMyPointsAsync, req:{req}", JsonConvert.SerializeObject(input));
-        var queryInput = _objectMapper.Map<GetPointsEarnedDetailInput, GetOperatorPointsActionSumInput>(input);
+        var queryInput = _objectMapper.Map<GetMyPointsInput, GetOperatorPointsActionSumInput>(input);
         queryInput.Role = OperatorRole.User;
         var actionRecordPoints = await _pointsProvider.GetOperatorPointsActionSumAsync(queryInput);
 

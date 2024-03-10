@@ -27,6 +27,7 @@ public class PointsServerApplicationAutoMapperProfile : Profile
             opt => opt.MapFrom(source => source.Role));
         CreateMap<OperatorPointsSumIndex, PointsEarnedListDto>();
         CreateMap<GetPointsEarnedDetailInput, GetOperatorPointsActionSumInput>();
+        CreateMap<GetMyPointsInput, GetOperatorPointsActionSumInput>();
         CreateMap<RankingDetailIndexerDto, ActionPoints>()
             .ForMember(t => t.Action, m => m.MapFrom(f => f.ActionName))
             .ForMember(t => t.Symbol, m => m.MapFrom(f => f.PointsName))

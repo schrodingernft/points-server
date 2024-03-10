@@ -11,5 +11,5 @@ public interface IPointsService
     Task<RankingDetailDto> GetRankingDetailAsync(GetRankingDetailInput input);
     Task<GetPointsEarnedListDto> GetPointsEarnedListAsync(GetPointsEarnedListInput input);
     Task<PointsEarnedDetailDto> GetPointsEarnedDetailAsync(GetPointsEarnedDetailInput input);
-    Task<MyPointDetailsDto> GetMyPointsAsync(GetPointsEarnedDetailInput input);
+    Task<MyPointDetailsDto> GetMyPointsAsync(GetMyPointsInput input);
 }
