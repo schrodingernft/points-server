@@ -110,6 +110,7 @@ public class PointsService : IPointsService, ISingletonDependency
             actionPoints.Rate = pointsRules.KolAmount;
             actionPoints.Decimal = pointsRules.Decimal;
         }
+
         resp.PointDetails = actionPointList;
 
         var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain);
@@ -213,9 +214,11 @@ public class PointsService : IPointsService, ISingletonDependency
                 actionPoints.FollowersNumber = followersNumber;
             }
 
-            actionPoints.Rate = input.Role == OperatorRole.Kol ? pointsRules.KolAmount : pointsRules.InviterAmount;;
+            actionPoints.Rate = input.Role == OperatorRole.Kol ? pointsRules.KolAmount : pointsRules.InviterAmount;
+            ;
             actionPoints.Decimal = pointsRules.Decimal;
         }
+
         resp.PointDetails = actionPointList;
 
         var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain);
@@ -226,7 +229,7 @@ public class PointsService : IPointsService, ISingletonDependency
             resp.DappName = GetDappDto(domainInfo.DappName).DappName;
             resp.Domain = domainInfo.Domain;
         }
-        
+
 
         _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(resp));
         return resp;
@@ -235,6 +238,7 @@ public class PointsService : IPointsService, ISingletonDependency
     public async Task<MyPointDetailsDto> GetMyPointsAsync(GetMyPointsInput input)
     {
         _logger.LogInformation("GetMyPointsAsync, req:{req}", JsonConvert.SerializeObject(input));
+        input.Domain = GetTopLevelDomain(input.Domain);
         var queryInput = _objectMapper.Map<GetMyPointsInput, GetOperatorPointsActionSumInput>(input);
         queryInput.Role = OperatorRole.User;
         var actionRecordPoints = await _pointsProvider.GetOperatorPointsActionSumAsync(queryInput);
@@ -279,6 +283,17 @@ public class PointsService : IPointsService, ISingletonDependency
 
         _logger.LogInformation("GetMyPointsAsync, resp:{resp}", JsonConvert.SerializeObject(resp));
         return resp;
+    }
+
+    public static string GetTopLevelDomain(string domain)
+    {
+        string[] domainParts = domain.Split('.');
+        if (domainParts.Length <= 2)
+        {
+            return domain;
+        }
+
+        return domainParts[^2] + "." + domainParts[^1];
     }
 
     private DAppDto GetDappDto(string dappId)
