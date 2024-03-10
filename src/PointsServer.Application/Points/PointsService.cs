@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using PointsServer.Common;
@@ -238,7 +237,6 @@ public class PointsService : IPointsService, ISingletonDependency
     public async Task<MyPointDetailsDto> GetMyPointsAsync(GetMyPointsInput input)
     {
         _logger.LogInformation("GetMyPointsAsync, req:{req}", JsonConvert.SerializeObject(input));
-        input.Domain = GetTopLevelDomain(input.Domain);
         var queryInput = _objectMapper.Map<GetMyPointsInput, GetOperatorPointsActionSumInput>(input);
         queryInput.Role = OperatorRole.User;
         var actionRecordPoints = await _pointsProvider.GetOperatorPointsActionSumAsync(queryInput);
@@ -283,17 +281,6 @@ public class PointsService : IPointsService, ISingletonDependency
 
         _logger.LogInformation("GetMyPointsAsync, resp:{resp}", JsonConvert.SerializeObject(resp));
         return resp;
-    }
-
-    public static string GetTopLevelDomain(string domain)
-    {
-        string[] domainParts = domain.Split('.');
-        if (domainParts.Length <= 2)
-        {
-            return domain;
-        }
-
-        return domainParts[^2] + "." + domainParts[^1];
     }
 
     private DAppDto GetDappDto(string dappId)
