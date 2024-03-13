@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using PointsServer.Points;
@@ -42,5 +43,11 @@ public class PointsController : PointsServerController
     public async Task<PointsEarnedDetailDto> GetPointsEarnedDetailAsync(GetPointsEarnedDetailInput input)
     {
         return await _pointsService.GetPointsEarnedDetailAsync(input);
+    }
+
+    [HttpGet("my/points")]
+    public async Task<MyPointDetailsDto> GetMyPointsAsync(GetMyPointsInput input)
+    {
+        return await _pointsService.GetMyPointsAsync(input);
     }
 }

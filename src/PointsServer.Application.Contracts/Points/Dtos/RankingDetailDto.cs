@@ -15,10 +15,21 @@ public class ActionPoints
 {
     public string Action { get; set; }
     public string Symbol { get; set; }
+    public int Decimal { get; set; }
     public decimal Amount { get; set; }
     public long CreateTime { get; set; }
     public long UpdateTime { get; set; }
     public long FollowersNumber { get; set; }
     public decimal Rate { get; set; }
-    public int Decimal { get; set; }
+}
+
+public class EarnedPointDto : ActionPoints
+{
+    public decimal Rate { get; set; }
+    public string DisplayName { get; set; }
+}
+
+public class MyPointDetailsDto
+{
+    public List<EarnedPointDto> PointDetails { get; set; } = new();
 }

@@ -27,12 +27,18 @@ public class PointsServerApplicationAutoMapperProfile : Profile
             opt => opt.MapFrom(source => source.Role));
         CreateMap<OperatorPointsSumIndex, PointsEarnedListDto>();
         CreateMap<GetPointsEarnedDetailInput, GetOperatorPointsActionSumInput>();
+        CreateMap<GetMyPointsInput, GetOperatorPointsActionSumInput>();
         CreateMap<RankingDetailIndexerDto, ActionPoints>()
             .ForMember(t => t.Action, m => m.MapFrom(f => f.ActionName))
             .ForMember(t => t.Symbol, m => m.MapFrom(f => f.PointsName))
             .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount))
             .ForMember(t => t.CreateTime, m => m.MapFrom(f => f.CreateTime.ToUtcMilliSeconds()))
-            .ForMember(t => t.UpdateTime, m => m.MapFrom(f => f.UpdateTime.ToUtcMilliSeconds()))
-            ;
+            .ForMember(t => t.UpdateTime, m => m.MapFrom(f => f.UpdateTime.ToUtcMilliSeconds()));
+        CreateMap<RankingDetailIndexerDto, EarnedPointDto>()
+            .ForMember(t => t.Action, m => m.MapFrom(f => f.ActionName))
+            .ForMember(t => t.Symbol, m => m.MapFrom(f => f.PointsName))
+            .ForMember(t => t.Amount, m => m.MapFrom(f => f.Amount))
+            .ForMember(t => t.CreateTime, m => m.MapFrom(f => f.CreateTime.ToUtcMilliSeconds()))
+            .ForMember(t => t.UpdateTime, m => m.MapFrom(f => f.UpdateTime.ToUtcMilliSeconds()));
     }
 }

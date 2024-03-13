@@ -17,4 +17,5 @@ public class PointsRules
     public decimal KolAmount { get; set; }
     public decimal InviterAmount { get; set; }
     public int Decimal { get; set; }
+    public string DisplayNamePattern { get; set; }
 }
