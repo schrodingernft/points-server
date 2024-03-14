@@ -21,12 +21,12 @@ public class ActionPoints
     public long UpdateTime { get; set; }
     public long FollowersNumber { get; set; }
     public decimal Rate { get; set; }
+    public string DisplayName{ get; set; }
 }
 
 public class EarnedPointDto : ActionPoints
 {
     public decimal Rate { get; set; }
-    public string DisplayName { get; set; }
 }
 
 public class MyPointDetailsDto

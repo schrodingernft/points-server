@@ -203,7 +203,7 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
         {
             SortingKeywordType.FirstSymbolAmount => a => a.FirstSymbolAmount,
             SortingKeywordType.SecondSymbolAmount => a => a.SecondSymbolAmount,
-            SortingKeywordType.ThirdSymbolAmount => a => a.ThirdSymbolAmount,
+            SortingKeywordType.FiveSymbolAmount => a => a.FiveSymbolAmount,
             _ => a => a.FirstSymbolAmount
         };
     }

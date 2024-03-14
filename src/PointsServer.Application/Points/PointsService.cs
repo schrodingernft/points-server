@@ -113,6 +113,7 @@ public class PointsService : IPointsService, ISingletonDependency
 
             actionPoints.Rate = pointsRules.KolAmount;
             actionPoints.Decimal = pointsRules.Decimal;
+            actionPoints.DisplayName = await GetDisplayNameAsync(input.DappName, actionPoints);
         }
 
         resp.PointDetails = actionPointList;
@@ -221,6 +222,7 @@ public class PointsService : IPointsService, ISingletonDependency
             actionPoints.Rate = input.Role == OperatorRole.Kol ? pointsRules.KolAmount : pointsRules.InviterAmount;
             ;
             actionPoints.Decimal = pointsRules.Decimal;
+            actionPoints.DisplayName = await GetDisplayNameAsync(input.DappName, actionPoints);
         }
 
         resp.PointDetails = actionPointList;
@@ -237,6 +239,58 @@ public class PointsService : IPointsService, ISingletonDependency
 
         _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(resp));
         return resp;
+    }
+
+    private async Task<string> GetDisplayNameAsync(string dappName, ActionPoints actionPoints)
+    {
+        PointsRules pointsRules;
+        switch (actionPoints.Action)
+        {
+            case Constants.JoinAction:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, actionPoints.Action);
+                if (pointsRules == null) break;
+                return pointsRules.DisplayNamePattern;
+            case Constants.SelfIncreaseAction:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, actionPoints.Action);
+                if (pointsRules == null) break;
+                return pointsRules.DisplayNamePattern;
+
+            case Constants.ApplyToBeAdvocateAction:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, actionPoints.Action);
+                if (pointsRules == null) break;
+                return pointsRules.DisplayNamePattern;
+            case Constants.CommunityInteractionAction:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, actionPoints.Action);
+                if (pointsRules == null) break;
+                return pointsRules.DisplayNamePattern;
+            case Constants.AdoptAction:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, actionPoints.Action);
+                if (pointsRules == null) break;
+                return pointsRules.DisplayNamePattern;
+                break;
+            case Constants.RerollAction:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, actionPoints.Action);
+                if (pointsRules == null) break;
+                return pointsRules.DisplayNamePattern;
+            case Constants.TradeAction:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, actionPoints.Action);
+                if (pointsRules == null) break;
+                return pointsRules.DisplayNamePattern;
+            case Constants.TradeGen0Action:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, actionPoints.Action);
+                if (pointsRules == null) break;
+                return pointsRules.DisplayNamePattern;
+            case Constants.SGRHoldingAction:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, actionPoints.Action);
+                if (pointsRules == null) break;
+                return pointsRules.DisplayNamePattern;
+            default:
+                pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(dappName, Constants.DefaultAction);
+                if (pointsRules == null) break;
+                return Strings.Format(pointsRules.DisplayNamePattern, actionPoints.Action);
+        }
+
+        return "";
     }
 
     public async Task<MyPointDetailsDto> GetMyPointsAsync(GetMyPointsInput input)
@@ -277,6 +331,48 @@ public class PointsService : IPointsService, ISingletonDependency
                     pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
                     if (pointsRules == null) continue;
                     earnedPointDto.Rate = pointsRules.UserAmount;
+                    earnedPointDto.Decimal = pointsRules.Decimal;
+                    earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
+                    break;
+                case Constants.ApplyToBeAdvocateAction:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    if (pointsRules == null) continue;
+                    earnedPointDto.Decimal = pointsRules.Decimal;
+                    earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
+                    break;
+                case Constants.CommunityInteractionAction:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    if (pointsRules == null) continue;
+                    earnedPointDto.Decimal = pointsRules.Decimal;
+                    earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
+                    break;
+                case Constants.AdoptAction:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    if (pointsRules == null) continue;
+                    earnedPointDto.Decimal = pointsRules.Decimal;
+                    earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
+                    break;
+                case Constants.RerollAction:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    if (pointsRules == null) continue;
+                    earnedPointDto.Decimal = pointsRules.Decimal;
+                    earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
+                    break;
+                case Constants.TradeAction:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    if (pointsRules == null) continue;
+                    earnedPointDto.Decimal = pointsRules.Decimal;
+                    earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
+                    break;
+                case Constants.TradeGen0Action:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    if (pointsRules == null) continue;
+                    earnedPointDto.Decimal = pointsRules.Decimal;
+                    earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
+                    break;
+                case Constants.SGRHoldingAction:
+                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, earnedPointDto.Action);
+                    if (pointsRules == null) continue;
                     earnedPointDto.Decimal = pointsRules.Decimal;
                     earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
                     break;

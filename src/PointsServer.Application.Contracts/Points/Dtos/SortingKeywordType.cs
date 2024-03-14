@@ -4,5 +4,5 @@ public enum SortingKeywordType
 {
     FirstSymbolAmount,
     SecondSymbolAmount,
-    ThirdSymbolAmount,
+    FiveSymbolAmount,
 }
