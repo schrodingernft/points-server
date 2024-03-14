@@ -28,13 +28,13 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
     private readonly LatestExecuteTimeProvider _latestExecuteTimeProvider;
     private readonly IObjectMapper _objectMapper;
-    private readonly INESTRepository<OperatorPointsSumIndex, string> _repository;
+    private readonly INESTRepository<OperatorPointsRankSumIndex, string> _repository;
     private readonly IPointsSumProvider _pointsSumProvider;
     private readonly ILogger<PointsSumService> _logger;
 
     public PointsSumService(IPointsIndexerProvider pointsIndexerProvider,
         LatestExecuteTimeProvider latestExecuteTimeProvider,
-        IObjectMapper objectMapper, INESTRepository<OperatorPointsSumIndex, string> repository,
+        IObjectMapper objectMapper, INESTRepository<OperatorPointsRankSumIndex, string> repository,
         IPointsSumProvider pointsSumProvider, IPointsProvider pointsProvider, ILogger<PointsSumService> logger)
     {
         _pointsIndexerProvider = pointsIndexerProvider;
@@ -55,7 +55,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         var pointsSumList =
             await _pointsIndexerProvider.GetPointsSumListAsync(latestExecuteTime, now);
-        var pointsSumIndexList = new List<OperatorPointsSumIndex>();
+        var pointsSumIndexList = new List<OperatorPointsRankSumIndex>();
 
         var userAddresses = pointsSumList
             .Where(pointSum => pointSum.Role == OperatorRole.User)
@@ -82,7 +82,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         foreach (var pointsSumDto in pointsSumList)
         {
-            var operatorPointSumIndex = _objectMapper.Map<PointsSumDto, OperatorPointsSumIndex>(pointsSumDto);
+            var operatorPointSumIndex = _objectMapper.Map<PointsSumDto, OperatorPointsRankSumIndex>(pointsSumDto);
             var relationshipFlag = domainDic.TryGetValue(operatorPointSumIndex.Domain, out var operatorDomain);
             switch (operatorPointSumIndex.Role)
             {

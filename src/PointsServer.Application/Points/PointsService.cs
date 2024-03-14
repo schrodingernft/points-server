@@ -68,7 +68,7 @@ public class PointsService : IPointsService, ISingletonDependency
         var kolFollowersCountDic = await _pointsProvider.GetKolFollowersCountDicAsync(domains);
         foreach (var index in pointsList.IndexList)
         {
-            var dto = _objectMapper.Map<OperatorPointsSumIndex, RankingListDto>(index);
+            var dto = _objectMapper.Map<OperatorPointsRankSumIndex, RankingListDto>(index);
             if (kolFollowersCountDic.TryGetValue(index.Domain, out var followersNumber))
             {
                 dto.FollowersNumber = followersNumber;
@@ -155,7 +155,7 @@ public class PointsService : IPointsService, ISingletonDependency
         foreach (var operatorPointSumIndex in pointsList.IndexList)
         {
             var pointsEarnedListDto =
-                _objectMapper.Map<OperatorPointsSumIndex, PointsEarnedListDto>(operatorPointSumIndex);
+                _objectMapper.Map<OperatorPointsRankSumIndex, PointsEarnedListDto>(operatorPointSumIndex);
 
             if (kolFollowersCountDic.TryGetValue(operatorPointSumIndex.Domain, out var followersNumber))
             {

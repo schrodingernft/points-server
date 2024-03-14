@@ -21,11 +21,11 @@ public class PointsServerApplicationAutoMapperProfile : Profile
         CreateMap<DappInfo, DAppDto>().ReverseMap();
         CreateMap<GetRankingDetailInput, GetOperatorPointsActionSumInput>();
         CreateMap<GetRankingListInput, GetOperatorPointsSumIndexListInput>();
-        CreateMap<OperatorPointsSumIndex, RankingListDto>();
+        CreateMap<OperatorPointsRankSumIndex, RankingListDto>();
         CreateMap<GetPointsEarnedListInput, GetOperatorPointsSumIndexListByAddressInput>().ForMember(
             destination => destination.Type,
             opt => opt.MapFrom(source => source.Role));
-        CreateMap<OperatorPointsSumIndex, PointsEarnedListDto>();
+        CreateMap<OperatorPointsRankSumIndex, PointsEarnedListDto>();
         CreateMap<GetPointsEarnedDetailInput, GetOperatorPointsActionSumInput>();
         CreateMap<GetMyPointsInput, GetOperatorPointsActionSumInput>();
         CreateMap<RankingDetailIndexerDto, ActionPoints>()

@@ -9,20 +9,20 @@ namespace PointsServer.Worker.Provider;
 
 public interface ICalculationProvider
 {
-    Task<List<OperatorPointsSumIndex>> GetOperatorPointSumListAsync(int skipCount, int maxResultCount);
-    Task UpdateOperatorPointSumAsync(List<OperatorPointsSumIndex> operatorPointSumList);
+    Task<List<OperatorPointsRankSumIndex>> GetOperatorPointSumListAsync(int skipCount, int maxResultCount);
+    Task UpdateOperatorPointSumAsync(List<OperatorPointsRankSumIndex> operatorPointSumList);
 }
 
 public class CalculationProvider : ICalculationProvider, ISingletonDependency
 {
-    private readonly INESTRepository<OperatorPointsSumIndex, string> _operatorPointSumRepository;
+    private readonly INESTRepository<OperatorPointsRankSumIndex, string> _operatorPointSumRepository;
 
-    public CalculationProvider(INESTRepository<OperatorPointsSumIndex, string> operatorPointSumRepository)
+    public CalculationProvider(INESTRepository<OperatorPointsRankSumIndex, string> operatorPointSumRepository)
     {
         _operatorPointSumRepository = operatorPointSumRepository;
     }
 
-    public async Task<List<OperatorPointsSumIndex>> GetOperatorPointSumListAsync(int skipCount, int maxResultCount)
+    public async Task<List<OperatorPointsRankSumIndex>> GetOperatorPointSumListAsync(int skipCount, int maxResultCount)
     {
         var (totalCount, data) =
             await _operatorPointSumRepository.GetListAsync(skip: skipCount, limit: maxResultCount);
@@ -30,7 +30,7 @@ public class CalculationProvider : ICalculationProvider, ISingletonDependency
         return data;
     }
     
-    public async Task UpdateOperatorPointSumAsync(List<OperatorPointsSumIndex> operatorPointSumList)
+    public async Task UpdateOperatorPointSumAsync(List<OperatorPointsRankSumIndex> operatorPointSumList)
     {
         await _operatorPointSumRepository.BulkAddOrUpdateAsync(operatorPointSumList);
     }
