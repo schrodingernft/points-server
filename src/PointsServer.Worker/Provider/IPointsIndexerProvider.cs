@@ -46,6 +46,12 @@ public class PointsIndexerProvider : IPointsIndexerProvider, ISingletonDependenc
                         firstSymbolAmount,
                         secondSymbolAmount,
                         thirdSymbolAmount,
+                        fourSymbolAmount,
+                        fiveSymbolAmount,
+                        sixSymbolAmount,
+                        sevenSymbolAmount,
+                        eightSymbolAmount,
+                        nineSymbolAmount,
     					createTime,
                         updateTime
                         }
