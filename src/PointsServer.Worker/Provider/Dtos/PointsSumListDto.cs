@@ -25,6 +25,13 @@ public class PointsSumDto
     public long FirstSymbolAmount { get; set; }
     public long SecondSymbolAmount { get; set; }
     public long ThirdSymbolAmount { get; set; }
+    public long FourSymbolAmount { get; set; }
+    public long FiveSymbolAmount { get; set; }
+    public long SixSymbolAmount { get; set; } 
+    public long SevenSymbolAmount { get; set; } 
+    public long EightSymbolAmount { get; set; } 
+    public long NineSymbolAmount { get; set; } 
+    
     public DateTime CreateTime { get; set; }
     public DateTime UpdateTime { get; set; }
 }
