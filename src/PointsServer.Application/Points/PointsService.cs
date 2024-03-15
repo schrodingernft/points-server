@@ -104,7 +104,8 @@ public class PointsService : IPointsService, ISingletonDependency
             await _pointsProvider.GetKolFollowersCountDicAsync(new List<string> { input.Domain });
         var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
 
-        foreach (var actionPoints in actionPointList.Where(actionPoints => actionPoints.Action == CommonConstant.SelfIncreaseAction))
+       // foreach (var actionPoints in actionPointList.Where(actionPoints => actionPoints.Action == CommonConstant.SelfIncreaseAction))
+        foreach (var actionPoints in actionPointList)
         {
             if (kolFollowersCountDic.TryGetValue(input.Domain, out var followersNumber))
             {
@@ -212,7 +213,8 @@ public class PointsService : IPointsService, ISingletonDependency
             await _pointsProvider.GetKolFollowersCountDicAsync(new List<string> { input.Domain });
         var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
 
-        foreach (var actionPoints in actionPointList.Where(actionPoints => actionPoints.Action == CommonConstant.SelfIncreaseAction))
+        //foreach (var actionPoints in actionPointList.Where(actionPoints => actionPoints.Action == CommonConstant.SelfIncreaseAction))
+        foreach (var actionPoints in actionPointList)
         {
             if (kolFollowersCountDic.TryGetValue(input.Domain, out var followersNumber))
             {
