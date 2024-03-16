@@ -99,7 +99,7 @@ public class PointsService : IPointsService, ISingletonDependency
         }
 
         var actionPointList =
-            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data);
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data).OrderBy(o => o.Symbol).ToList();;
         var kolFollowersCountDic =
             await _pointsProvider.GetKolFollowersCountDicAsync(new List<string> { input.Domain });
         var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
@@ -210,7 +210,7 @@ public class PointsService : IPointsService, ISingletonDependency
         }
 
         var actionPointList =
-            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data);
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data).OrderBy(o => o.Symbol).ToList();
         var kolFollowersCountDic =
             await _pointsProvider.GetKolFollowersCountDicAsync(new List<string> { input.Domain });
         var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
