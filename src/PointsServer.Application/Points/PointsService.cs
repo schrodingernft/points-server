@@ -48,7 +48,7 @@ public class PointsService : IPointsService, ISingletonDependency
     public async Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input)
     {
         _logger.LogInformation("GetRankingListAsync, req:{req}", JsonConvert.SerializeObject(input));
-        if (input != null && !input.DappName.IsNullOrEmpty())
+        if (input != null && !input.Keyword.IsNullOrEmpty())
         {
             input.SkipCount = 0;
         }
