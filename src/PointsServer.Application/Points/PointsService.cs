@@ -71,7 +71,7 @@ public class PointsService : IPointsService, ISingletonDependency
         var domains = pointsList.IndexList
             .Select(p => p.Domain).Distinct()
             .ToList();
-        var splitDomainList = this.SplitDomainList(domains);
+        var splitDomainList = SplitDomainList(domains);
         var kolFollowersCountDic = new Dictionary<string, long>();
         foreach (var domainList in splitDomainList)
         {
@@ -98,13 +98,13 @@ public class PointsService : IPointsService, ISingletonDependency
         return resp;
     }
 
-    private List<List<string>> SplitDomainList(List<string> domains)
+    private static List<List<string>> SplitDomainList(List<string> domains)
     {
         var splitList = new List<List<string>>();
 
-        for (int i = 0; i < domains.Count; i += 10)
+        for (var i = 0; i < domains.Count; i += 10)
         {
-            List<string> sublist = domains.Skip(i).Take(10).ToList();
+            var sublist = domains.Skip(i).Take(10).ToList();
             splitList.Add(sublist);
         }
 
