@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphQL;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using PointsServer.Common;
@@ -47,6 +48,11 @@ public class PointsService : IPointsService, ISingletonDependency
     public async Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input)
     {
         _logger.LogInformation("GetRankingListAsync, req:{req}", JsonConvert.SerializeObject(input));
+        if (input != null && !input.DappName.IsNullOrEmpty())
+        {
+            input.SkipCount = 0;
+        }
+
         var pointsList = await
             _pointsProvider.GetOperatorPointsSumIndexListAsync(
                 _objectMapper.Map<GetRankingListInput, GetOperatorPointsSumIndexListInput>(input));
