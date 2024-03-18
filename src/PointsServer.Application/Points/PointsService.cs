@@ -71,7 +71,14 @@ public class PointsService : IPointsService, ISingletonDependency
         var domains = pointsList.IndexList
             .Select(p => p.Domain).Distinct()
             .ToList();
-        var kolFollowersCountDic = await _pointsProvider.GetKolFollowersCountDicAsync(domains);
+        var splitDomainList = this.SplitDomainList(domains);
+        var kolFollowersCountDic = new Dictionary<string, long>();
+        foreach (var domainList in splitDomainList)
+        {
+            var domainCountDic = await _pointsProvider.GetKolFollowersCountDicAsync(domains);
+            kolFollowersCountDic.AddIfNotContains(domainCountDic);
+        }
+        
         foreach (var index in pointsList.IndexList)
         {
             var dto = _objectMapper.Map<OperatorPointsRankSumIndex, RankingListDto>(index);
@@ -89,6 +96,19 @@ public class PointsService : IPointsService, ISingletonDependency
 
         _logger.LogInformation("GetRankingListAsync, resp:{resp}", JsonConvert.SerializeObject(resp));
         return resp;
+    }
+
+    private List<List<string>> SplitDomainList(List<string> domains)
+    {
+        var splitList = new List<List<string>>();
+
+        for (int i = 0; i < domains.Count; i += 10)
+        {
+            List<string> sublist = domains.Skip(i).Take(10).ToList();
+            splitList.Add(sublist);
+        }
+
+        return splitList;
     }
 
     public async Task<RankingDetailDto> GetRankingDetailAsync(GetRankingDetailInput input)
