@@ -6,6 +6,7 @@ using AElf.Indexing.Elasticsearch;
 using Microsoft.Extensions.Logging;
 using PointsServer.Common;
 using PointsServer.Grains.State.Worker;
+using PointsServer.Operator;
 using PointsServer.Points;
 using PointsServer.Points.Dtos;
 using PointsServer.Points.Provider;
@@ -55,7 +56,8 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         var pointsSumList =
             await _pointsIndexerProvider.GetPointsSumListAsync(latestExecuteTime, now);
-        var pointsSumIndexList = new List<OperatorPointsRankSumIndex>();
+        _logger.LogInformation("GetIndexerPointsSumList, latestTime: {latestExecuteTime}, now: {now}, count: {count}",
+            latestExecuteTime, now, pointsSumList.Count);
 
         var userAddresses = pointsSumList
             .Where(pointSum => pointSum.Role == OperatorRole.User)
@@ -78,7 +80,39 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         var domainDic =
             await _pointsSumProvider.GetKolInviterRelationShipByDomainsAsync(userRoleDomains.Distinct().ToList());
+        
+        var pointsSumIndexList = await ConvertDtoToIndexAsync(pointsSumList, domainDic);
 
+        try
+        {
+            if (pointsSumIndexList.IsNullOrEmpty())
+            {
+                _logger.LogInformation("BulkAddOrUpdateAsync is null");
+                return;
+            }
+
+            await _repository.BulkAddOrUpdateAsync(pointsSumIndexList);
+            _logger.LogInformation("BulkAddOrUpdateAsync, count: {count}", pointsSumIndexList.Count);
+
+            var latestExecuteMaxTime = pointsSumIndexList
+                .Select(point => point.UpdateTime).Max() - 1000;
+            await _latestExecuteTimeProvider.UpdateLatestExecuteTimeAsync(new WorkerOptionState
+            {
+                Type = type,
+                LatestExecuteTime = latestExecuteMaxTime
+            });
+            _logger.LogInformation("RecordPointsSumAsync end. LatestExecuteMaxTime: {time}", latestExecuteMaxTime);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "RecordPointsSumAsync fail, time: {time}", now);
+        }
+    }
+
+    private async Task<List<OperatorPointsRankSumIndex>> ConvertDtoToIndexAsync(List<PointsSumDto> pointsSumList,
+        IReadOnlyDictionary<string, OperatorDomainInfoIndex> domainDic)
+    {
+        var pointsSumIndexList = new List<OperatorPointsRankSumIndex>();
 
         foreach (var pointsSumDto in pointsSumList)
         {
@@ -104,46 +138,35 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
                     break;
             }
-            
+
             if (relationshipFlag)
             {
                 operatorPointSumIndex.DappName = operatorDomain.DappName;
             }
-            
+
             //query indexer
             if (!relationshipFlag)
             {
                 _logger.LogInformation(
-                    "RecordPointsSumAsync: local Es not find,to indexer find begin, domain: {domain}", operatorPointSumIndex.Domain);
-                var operatorDomainDto = await _pointsProvider.GetOperatorDomainInfoAsync(new GetOperatorDomainInfoInput()
-                {
-                    Domain = operatorPointSumIndex.Domain
-                });
+                    "RecordPointsSumAsync: local Es not find,to indexer find begin, domain: {domain}",
+                    operatorPointSumIndex.Domain);
+                var operatorDomainDto = await _pointsProvider.GetOperatorDomainInfoAsync(
+                    new GetOperatorDomainInfoInput()
+                    {
+                        Domain = operatorPointSumIndex.Domain
+                    });
                 if (operatorDomainDto != null)
                 {
                     operatorPointSumIndex.DappName = operatorDomainDto.DappId;
                     _logger.LogInformation(
-                        "RecordPointsSumAsync: local Es not find,to indexer find end, domain: {domain}", operatorDomainDto.Domain);
+                        "RecordPointsSumAsync: local Es not find,to indexer find end, domain: {domain}",
+                        operatorDomainDto.Domain);
                 }
             }
 
             pointsSumIndexList.Add(operatorPointSumIndex);
         }
 
-        if (!pointsSumIndexList.IsNullOrEmpty())
-        {
-            _logger.LogInformation(
-                "BulkAddOrUpdateAsync, count: {count}", pointsSumIndexList.Count);
-            await _repository.BulkAddOrUpdateAsync(pointsSumIndexList);
-        }
-
-        var latestExecuteMaxTime = pointsSumIndexList.Select(point => point.UpdateTime).Max();
-        _logger.LogInformation(
-            "LatestExecuteMaxTime, time: {time}", latestExecuteMaxTime);
-        await _latestExecuteTimeProvider.UpdateLatestExecuteTimeAsync(new WorkerOptionState
-        {
-            Type = type,
-            LatestExecuteTime = latestExecuteMaxTime
-        });
+        return pointsSumIndexList;
     }
 }
