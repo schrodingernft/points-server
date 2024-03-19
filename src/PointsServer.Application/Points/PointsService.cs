@@ -31,7 +31,8 @@ public class PointsService : IPointsService, ISingletonDependency
     private readonly IOperatorDomainProvider _operatorDomainProvider;
     private readonly IDAppService _dAppService;
     private readonly IDomainProvider _domainProvider;
-
+    private const int SplitSize = 100;
+    
     public PointsService(IObjectMapper objectMapper, IPointsProvider pointsProvider,
         IPointsRulesProvider pointsRulesProvider, IOperatorDomainProvider operatorDomainProvider,
         ILogger<PointsService> logger, IDAppService dAppService, IDomainProvider domainProvider)
@@ -73,10 +74,11 @@ public class PointsService : IPointsService, ISingletonDependency
             .ToList();
         var splitDomainList = SplitDomainList(domains);
         var kolFollowersCountDic = new Dictionary<string, long>();
-        foreach (var domainList in splitDomainList)
+        var tasks = splitDomainList.Select(domainList => _pointsProvider.GetKolFollowersCountDicAsync(domainList));
+        var taskResults = await Task.WhenAll(tasks);
+        foreach (var result in taskResults)
         {
-            var domainCountDic = await _pointsProvider.GetKolFollowersCountDicAsync(domains);
-            kolFollowersCountDic.AddIfNotContains(domainCountDic);
+            kolFollowersCountDic.AddIfNotContains(result);
         }
         
         foreach (var index in pointsList.IndexList)
@@ -97,14 +99,14 @@ public class PointsService : IPointsService, ISingletonDependency
         _logger.LogInformation("GetRankingListAsync, resp:{resp}", JsonConvert.SerializeObject(resp));
         return resp;
     }
-
+    
     private static List<List<string>> SplitDomainList(List<string> domains)
     {
         var splitList = new List<List<string>>();
 
-        for (var i = 0; i < domains.Count; i += 10)
+        for (var i = 0; i < domains.Count; i += SplitSize)
         {
-            var sublist = domains.Skip(i).Take(10).ToList();
+            var sublist = domains.Skip(i).Take(SplitSize).ToList();
             splitList.Add(sublist);
         }
 

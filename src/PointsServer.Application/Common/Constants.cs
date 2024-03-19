@@ -13,4 +13,6 @@ public class Constants
     public const string SGRHoldingAction = "SGRHolding";
 
     public const string DefaultAction = "Default";
+    public const int MaxQuerySize = 100;
+
 }
