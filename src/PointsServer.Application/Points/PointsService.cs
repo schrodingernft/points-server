@@ -72,14 +72,16 @@ public class PointsService : IPointsService, ISingletonDependency
         var domains = pointsList.IndexList
             .Select(p => p.Domain).Distinct()
             .ToList();
-        var splitDomainList = SplitDomainList(domains);
+        var kolFollowersCountDic = await _pointsProvider.GetKolFollowersCountDicAsync(domains);
+
+        /*var splitDomainList = SplitDomainList(domains);
         var kolFollowersCountDic = new Dictionary<string, long>();
         var tasks = splitDomainList.Select(domainList => _pointsProvider.GetKolFollowersCountDicAsync(domainList));
         var taskResults = await Task.WhenAll(tasks);
         foreach (var result in taskResults)
         {
             kolFollowersCountDic.AddIfNotContains(result);
-        }
+        }*/
         
         foreach (var index in pointsList.IndexList)
         {
