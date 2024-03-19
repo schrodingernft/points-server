@@ -56,8 +56,8 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         var pointsSumList =
             await _pointsIndexerProvider.GetPointsSumListAsync(latestExecuteTime, now);
-        _logger.LogInformation("GetIndexerPointsSumList, latestTime: {latestExecuteTime}, now: {now}, count: {count}",
-            latestExecuteTime, now, pointsSumList.Count);
+        _logger.LogInformation("RecordPointsSumAsync GetIndexerPointsSumList, latestTime: {latestExecuteTime}," +
+                               " now: {now}, count: {count}", latestExecuteTime, now, pointsSumList.Count);
 
         var userAddresses = pointsSumList
             .Where(pointSum => pointSum.Role == OperatorRole.User)
@@ -87,12 +87,12 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
         {
             if (pointsSumIndexList.IsNullOrEmpty())
             {
-                _logger.LogInformation("BulkAddOrUpdateAsync is null");
+                _logger.LogInformation("RecordPointsSumAsync BulkAddOrUpdateAsync is null");
                 return;
             }
 
             await _repository.BulkAddOrUpdateAsync(pointsSumIndexList);
-            _logger.LogInformation("BulkAddOrUpdateAsync, count: {count}", pointsSumIndexList.Count);
+            _logger.LogInformation("RecordPointsSumAsync BulkAddOrUpdateAsync, count: {count}", pointsSumIndexList.Count);
 
             var latestExecuteMaxTime = pointsSumIndexList
                 .Select(point => point.UpdateTime).Max() - 1000;
