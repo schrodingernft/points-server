@@ -31,7 +31,7 @@ public class PointsService : IPointsService, ISingletonDependency
     private readonly IOperatorDomainProvider _operatorDomainProvider;
     private readonly IDAppService _dAppService;
     private readonly IDomainProvider _domainProvider;
-    private const int SplitSize = 5;
+    private const int SplitSize = 1;
     
     public PointsService(IObjectMapper objectMapper, IPointsProvider pointsProvider,
         IPointsRulesProvider pointsRulesProvider, IOperatorDomainProvider operatorDomainProvider,
