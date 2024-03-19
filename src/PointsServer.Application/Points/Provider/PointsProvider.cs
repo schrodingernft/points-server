@@ -126,7 +126,7 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
             Variables = new
             {
                 domainIn = domainList, addressIn = new List<string>(), dappNameIn = new List<string>(), skipCount = 0,
-                maxResultCount = 1000
+                maxResultCount = 10000
             }
         });
 
