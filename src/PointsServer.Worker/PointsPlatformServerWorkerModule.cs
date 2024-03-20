@@ -45,6 +45,7 @@ public class PointsServerWorkerModule : AbpModule
 
         var configuration = context.Services.GetConfiguration();
         Configure<WorkerOptions>(configuration.GetSection("Worker"));
+        Configure<DappDomainOptions>(configuration.GetSection("DappDomain"));
         Configure<PointsCalculateOptions>(configuration.GetSection("PointsCalculate"));
         context.Services.AddHostedService<PointsServerWorkerHostService>();
         context.Services.AddSingleton<IPointsSumService, PointsSumService>();
@@ -55,7 +56,6 @@ public class PointsServerWorkerModule : AbpModule
         context.Services.AddSingleton<ILatestExecuteTimeProvider, LatestExecuteTimeProvider>();
         context.Services.AddSingleton<IGraphQlHelper, GraphQlHelper>();
         context.Services.AddSingleton<IPointsProvider, PointsProvider>();
-        context.Services.AddSingleton<IDAppService, DAppService>();
         ConfigureGraphQl(context, configuration);
         ConfigureOrleans(context, configuration);
     }

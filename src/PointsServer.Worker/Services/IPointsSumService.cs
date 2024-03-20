@@ -4,14 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using AElf.Indexing.Elasticsearch;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using PointsServer.Common;
-using PointsServer.DApps;
-using PointsServer.DApps.Dtos;
 using PointsServer.Grains.State.Worker;
 using PointsServer.Operator;
 using PointsServer.Points;
 using PointsServer.Points.Dtos;
 using PointsServer.Points.Provider;
+using PointsServer.Worker.Options;
 using PointsServer.Worker.Provider;
 using PointsServer.Worker.Provider.Dtos;
 using Volo.Abp.DependencyInjection;
@@ -34,13 +34,13 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
     private readonly INESTRepository<OperatorPointsRankSumIndex, string> _repository;
     private readonly IPointsSumProvider _pointsSumProvider;
     private readonly ILogger<PointsSumService> _logger;
-    private readonly IDAppService _dAppService;
+    private readonly DappDomainOptions _dappDomainOptions;
 
     public PointsSumService(IPointsIndexerProvider pointsIndexerProvider,
         LatestExecuteTimeProvider latestExecuteTimeProvider,
         IObjectMapper objectMapper, INESTRepository<OperatorPointsRankSumIndex, string> repository,
-        IPointsSumProvider pointsSumProvider, IPointsProvider pointsProvider, ILogger<PointsSumService> logger, 
-        IDAppService dAppService)
+        IPointsSumProvider pointsSumProvider, IPointsProvider pointsProvider, ILogger<PointsSumService> logger,
+        IOptionsSnapshot<DappDomainOptions> dappDomainOptions)
     {
         _pointsIndexerProvider = pointsIndexerProvider;
         _latestExecuteTimeProvider = latestExecuteTimeProvider;
@@ -49,7 +49,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
         _pointsSumProvider = pointsSumProvider;
         _pointsProvider = pointsProvider;
         _logger = logger;
-        _dAppService = dAppService;
+        _dappDomainOptions = dappDomainOptions.Value;
     }
 
     public async Task RecordPointsSumAsync()
@@ -85,10 +85,10 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
 
         var domainDic =
             await _pointsSumProvider.GetKolInviterRelationShipByDomainsAsync(userRoleDomains.Distinct().ToList());
-        
+
         try
         {
-            var dappDomainDic = _dAppService.GetDappDomainDic();
+            var dappDomainDic = GetDappDomainDic();
 
             var pointsSumIndexList = await ConvertDtoToIndexAsync(pointsSumList, domainDic, dappDomainDic);
 
@@ -99,7 +99,8 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
             }
 
             await _repository.BulkAddOrUpdateAsync(pointsSumIndexList);
-            _logger.LogInformation("RecordPointsSumAsync BulkAddOrUpdateAsync, count: {count}", pointsSumIndexList.Count);
+            _logger.LogInformation("RecordPointsSumAsync BulkAddOrUpdateAsync, count: {count}",
+                pointsSumIndexList.Count);
 
             var latestExecuteMaxTime = pointsSumIndexList
                 .Select(point => point.UpdateTime).Max() - 1000;
@@ -117,7 +118,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
     }
 
     private async Task<List<OperatorPointsRankSumIndex>> ConvertDtoToIndexAsync(List<PointsSumDto> pointsSumList,
-        IReadOnlyDictionary<string, OperatorDomainInfoIndex> domainDic, Dictionary<string, DAppDto> dappDomainDic)
+        IReadOnlyDictionary<string, OperatorDomainInfoIndex> domainDic, IReadOnlyDictionary<string, string> dappDomainDic)
     {
         var pointsSumIndexList = new List<OperatorPointsRankSumIndex>();
 
@@ -157,9 +158,9 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
             {
                 _logger.LogInformation(
                     "RecordPointsSumAsync: local Es not find,to indexer find begin, domain: {domain}", domain);
-                if (dappDomainDic.TryGetValue(domain, out var dappDto))
+                if (dappDomainDic.TryGetValue(domain, out var dappId))
                 {
-                    operatorPointSumIndex.DappName = dappDto.DappId;
+                    operatorPointSumIndex.DappName = dappId;
                 }
                 else
                 {
@@ -182,5 +183,14 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
         }
 
         return pointsSumIndexList;
+    }
+
+
+    private Dictionary<string, string> GetDappDomainDic()
+    {
+        return _dappDomainOptions.DappDomainList
+            .Where(d => !string.IsNullOrEmpty(d.Domain))
+            .GroupBy(d => d.Domain)
+            .ToDictionary(g => g.Key, g => g.First().DappId);
     }
 }
