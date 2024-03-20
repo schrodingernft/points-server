@@ -50,4 +50,10 @@ public class PointsController : PointsServerController
     {
         return await _pointsService.GetMyPointsAsync(input);
     }
+    
+    [HttpGet("ranking/all")]
+    public async Task<PagedResultDto<RankingListDto>> GetRankingListAllAsync(GetRankingListInput input)
+    {
+        return await _pointsService.GetRankingListAllAsync(input);
+    }
 }

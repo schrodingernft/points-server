@@ -17,6 +17,8 @@ namespace PointsServer.Points.Provider;
 public interface IPointsProvider
 {
     public Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListAsync(GetOperatorPointsSumIndexListInput input);
+    
+    public Task<OperatorPointSumIndexList> GetAllPointsSumIndexListAsync(GetOperatorPointsSumIndexListInput input);
 
     public Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListByAddressAsync(
         GetOperatorPointsSumIndexListByAddressInput input);
@@ -74,6 +76,35 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
         };
     }
 
+    public async Task<OperatorPointSumIndexList> GetAllPointsSumIndexListAsync(
+        GetOperatorPointsSumIndexListInput input)
+    {
+        var mustQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
+
+        if (!input.Keyword.IsNullOrWhiteSpace())
+        {
+            var shouldQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
+            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Domain).Value(input.Keyword)));
+            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Address).Value(input.Keyword)));
+            mustQuery.Add(q => q.Bool(b => b.Should(shouldQuery)));
+        }
+
+        mustQuery.Add(q => q.Terms(i =>
+            i.Field(f => f.DappName).Terms(input.DappName)));
+
+        QueryContainer Filter(QueryContainerDescriptor<OperatorPointsRankSumIndex> f) => f.Bool(b => b.Must(mustQuery));
+
+        var sortType = input.Sorting == "DESC" ? SortOrder.Descending : SortOrder.Ascending;
+        var result = await _pointsSumIndexRepository.GetListAsync(Filter, sortType: sortType,
+            sortExp: GetSortBy(input.SortingKeyWord), skip: input.SkipCount, limit: input.MaxResultCount);
+
+        return new OperatorPointSumIndexList
+        {
+            TotalCount = result.Item1,
+            IndexList = result.Item2
+        };
+    }
+    
     public async Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListByAddressAsync(
         GetOperatorPointsSumIndexListByAddressInput input)
     {

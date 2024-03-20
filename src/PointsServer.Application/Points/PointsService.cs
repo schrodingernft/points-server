@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphQL;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
@@ -14,15 +16,17 @@ using PointsServer.DApps.Provider;
 using PointsServer.Options;
 using PointsServer.Points.Dtos;
 using PointsServer.Points.Provider;
+using PointsServer.Users.Provider;
 using PointsServer.Worker.Provider.Dtos;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.ObjectMapping;
+using Volo.Abp.Users;
 using Constants = PointsServer.Common.Constants;
 
 namespace PointsServer.Points;
 
-public class PointsService : IPointsService, ISingletonDependency
+public class PointsService : PointsPlatformAppService, IPointsService, ISingletonDependency
 {
     private readonly IObjectMapper _objectMapper;
     private readonly IPointsRulesProvider _pointsRulesProvider;
@@ -32,10 +36,13 @@ public class PointsService : IPointsService, ISingletonDependency
     private readonly IDAppService _dAppService;
     private readonly IDomainProvider _domainProvider;
     private const int SplitSize = 1;
+    private readonly InternalWhiteListOptions _internalWhiteListOptions;
+    private readonly IUserInformationProvider _userInformationProvider;
     
     public PointsService(IObjectMapper objectMapper, IPointsProvider pointsProvider,
         IPointsRulesProvider pointsRulesProvider, IOperatorDomainProvider operatorDomainProvider,
-        ILogger<PointsService> logger, IDAppService dAppService, IDomainProvider domainProvider)
+        ILogger<PointsService> logger, IDAppService dAppService, IDomainProvider domainProvider, 
+        IOptionsSnapshot<InternalWhiteListOptions> internalWhiteListOptions, IUserInformationProvider userInformationProvider)
     {
         _objectMapper = objectMapper;
         _pointsRulesProvider = pointsRulesProvider;
@@ -44,12 +51,14 @@ public class PointsService : IPointsService, ISingletonDependency
         _logger = logger;
         _dAppService = dAppService;
         _domainProvider = domainProvider;
+        _internalWhiteListOptions = internalWhiteListOptions.Value;
+        _userInformationProvider = userInformationProvider;
     }
 
     public async Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input)
     {
         _logger.LogInformation("GetRankingListAsync, req:{req}", JsonConvert.SerializeObject(input));
-        if (input != null && !input.Keyword.IsNullOrEmpty())
+        if (input != null && !CollectionUtilities.IsNullOrEmpty(input.Keyword))
         {
             input.SkipCount = 0;
         }
@@ -429,6 +438,48 @@ public class PointsService : IPointsService, ISingletonDependency
     {
         var dappIdDic = _dAppService.GetDappIdDic();
         return dappIdDic[dappId];
+    }
+    
+    
+    public async Task<PagedResultDto<RankingListDto>> GetRankingListAllAsync(GetRankingListInput input)
+    {
+        _logger.LogInformation("GetRankingListAsync, req:{req}", JsonConvert.SerializeObject(input));
+        var userInfo = await _userInformationProvider.GetUserById(CurrentUser.GetId());
+
+        if (!_internalWhiteListOptions.WhiteList.Contains(userInfo.CaAddressMain))
+        {
+            throw new Exception("invalid address");
+        }
+        
+        if (input != null && !CollectionUtilities.IsNullOrEmpty(input.Keyword))
+        {
+            input.SkipCount = 0;
+        }
+
+        var pointsList = await
+            _pointsProvider.GetAllPointsSumIndexListAsync(
+                _objectMapper.Map<GetRankingListInput, GetOperatorPointsSumIndexListInput>(input));
+
+
+        var resp = new PagedResultDto<RankingListDto>();
+        if (pointsList.TotalCount == 0)
+        {
+            return resp;
+        }
+
+        resp.TotalCount = pointsList.TotalCount;
+        var items = new List<RankingListDto>();
+        
+        foreach (var index in pointsList.IndexList)
+        {
+            var dto = _objectMapper.Map<OperatorPointsRankSumIndex, RankingListDto>(index);
+            items.Add(dto);
+        }
+
+        resp.Items = items;
+
+        _logger.LogInformation("GetRankingListAsync, resp:{resp}", JsonConvert.SerializeObject(resp));
+        return resp;
     }
 }
 
