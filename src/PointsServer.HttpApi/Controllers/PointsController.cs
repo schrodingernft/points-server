@@ -53,7 +53,7 @@ public class PointsController : PointsServerController
     }
     
     [Authorize]
-    [HttpGet("ranking/all")]
+    [HttpPost("ranking/all")]
     public async Task<PagedResultDto<RankingListDto>> GetRankingListAllAsync(GetRankingListInput input)
     {
         return await _pointsService.GetRankingListAllAsync(input);
