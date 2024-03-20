@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AElf.Indexing.Elasticsearch;
 using GraphQL;
+using Microsoft.Extensions.Logging;
 using Nest;
 using PointsServer.Common;
 using PointsServer.Common.GraphQL;
@@ -16,6 +17,8 @@ namespace PointsServer.Points.Provider;
 public interface IPointsProvider
 {
     public Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListAsync(GetOperatorPointsSumIndexListInput input);
+    
+    public Task<OperatorPointSumIndexList> GetAllPointsSumIndexListAsync(GetOperatorPointsSumIndexListInput input);
 
     public Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListByAddressAsync(
         GetOperatorPointsSumIndexListByAddressInput input);
@@ -32,12 +35,14 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
 {
     private readonly INESTRepository<OperatorPointsRankSumIndex, string> _pointsSumIndexRepository;
     private readonly IGraphQlHelper _graphQlHelper;
+    private readonly ILogger<PointsProvider> _logger;
 
     public PointsProvider(
-        INESTRepository<OperatorPointsRankSumIndex, string> pointsSumIndexRepository, IGraphQlHelper graphQlHelper)
+        INESTRepository<OperatorPointsRankSumIndex, string> pointsSumIndexRepository, IGraphQlHelper graphQlHelper, ILogger<PointsProvider> logger)
     {
         _pointsSumIndexRepository = pointsSumIndexRepository;
         _graphQlHelper = graphQlHelper;
+        _logger = logger;
     }
 
     public async Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListAsync(
@@ -71,6 +76,35 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
         };
     }
 
+    public async Task<OperatorPointSumIndexList> GetAllPointsSumIndexListAsync(
+        GetOperatorPointsSumIndexListInput input)
+    {
+        var mustQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
+
+        if (!input.Keyword.IsNullOrWhiteSpace())
+        {
+            var shouldQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
+            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Domain).Value(input.Keyword)));
+            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Address).Value(input.Keyword)));
+            mustQuery.Add(q => q.Bool(b => b.Should(shouldQuery)));
+        }
+
+        mustQuery.Add(q => q.Terms(i =>
+            i.Field(f => f.DappName).Terms(input.DappName)));
+
+        QueryContainer Filter(QueryContainerDescriptor<OperatorPointsRankSumIndex> f) => f.Bool(b => b.Must(mustQuery));
+
+        var sortType = input.Sorting == "DESC" ? SortOrder.Descending : SortOrder.Ascending;
+        var result = await _pointsSumIndexRepository.GetListAsync(Filter, sortType: sortType,
+            sortExp: GetSortBy(input.SortingKeyWord), skip: input.SkipCount, limit: input.MaxResultCount);
+
+        return new OperatorPointSumIndexList
+        {
+            TotalCount = result.Item1,
+            IndexList = result.Item2
+        };
+    }
+    
     public async Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListByAddressAsync(
         GetOperatorPointsSumIndexListByAddressInput input)
     {
@@ -176,10 +210,12 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
 
     public async Task<OperatorDomainDto> GetOperatorDomainInfoAsync(GetOperatorDomainInfoInput queryInput)
     {
-        var indexerResult = await _graphQlHelper.QueryAsync<OperatorDomainIndexerQueryDto>(new GraphQLRequest
+        try
         {
-            Query =
-                @"query($domain:String!){
+            var indexerResult = await _graphQlHelper.QueryAsync<OperatorDomainIndexerQueryDto>(new GraphQLRequest
+            {
+                Query =
+                    @"query($domain:String!){
                     operatorDomainInfo(input: {domain:$domain}){
                         id,
                         domain,
@@ -188,13 +224,19 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
     					dappId               
                 }
             }",
-            Variables = new
-            {
-                domain = queryInput.Domain
-            }
-        });
+                Variables = new
+                {
+                    domain = queryInput.Domain
+                }
+            });
 
-        return indexerResult?.OperatorDomainInfo;
+            return indexerResult?.OperatorDomainInfo;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "GetOperatorDomainInfoAsync Exception domain:{Domain}", queryInput.Domain);
+            return null;
+        }
     }
 
     private Expression<Func<OperatorPointsRankSumIndex, object>> GetSortBy(SortingKeywordType sortingKeyWord)

@@ -14,6 +14,7 @@ public class DappInfo
     public string Icon { get; set; }
     public string Category { get; set; }
     public string SecondLevelDomain { get; set; }
+    public string FirstLevelDomain { get; set; }
     public string Link { get; set; }
     public bool SupportsApply { get; set; }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PointsServer.Points;
 using PointsServer.Points.Dtos;
@@ -49,5 +50,12 @@ public class PointsController : PointsServerController
     public async Task<MyPointDetailsDto> GetMyPointsAsync(GetMyPointsInput input)
     {
         return await _pointsService.GetMyPointsAsync(input);
+    }
+    
+    [Authorize]
+    [HttpGet("ranking/all")]
+    public async Task<PagedResultDto<RankingListDto>> GetRankingListAllAsync(GetRankingListInput input)
+    {
+        return await _pointsService.GetRankingListAllAsync(input);
     }
 }

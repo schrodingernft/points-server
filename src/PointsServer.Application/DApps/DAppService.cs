@@ -54,6 +54,14 @@ public class DAppService : IDAppService
         return _dAppOption.CurrentValue.DappInfos
             .ToDictionary(dApp => dApp.DappId, dApp => _objectMapper.Map<DappInfo, DAppDto>(dApp));
     }
+    
+    public Dictionary<string, DAppDto> GetDappDomainDic()
+    {
+        return _dAppOption.CurrentValue.DappInfos
+            .Where(d => !string.IsNullOrEmpty(d.FirstLevelDomain))
+            .GroupBy(d => d.FirstLevelDomain)
+            .ToDictionary(g => g.Key, g => _objectMapper.Map<DappInfo, DAppDto>(g.First()));
+    }
 
     private string GetShowRole(OperatorRole role)
     {
