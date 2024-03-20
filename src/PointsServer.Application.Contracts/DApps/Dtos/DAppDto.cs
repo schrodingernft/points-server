@@ -8,5 +8,6 @@ public class DAppDto
     public string Category { get; set; }
     public string Link { get; set; }
     public string SecondLevelDomain { get; set; }
+    public string FirstLevelDomain { get; set; }
     public bool SupportsApply { get; set; }
 }

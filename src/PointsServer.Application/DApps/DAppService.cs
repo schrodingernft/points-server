@@ -58,8 +58,8 @@ public class DAppService : IDAppService
     public Dictionary<string, DAppDto> GetDappDomainDic()
     {
         return _dAppOption.CurrentValue.DappInfos
-            .Where(d => !string.IsNullOrEmpty(d.SecondLevelDomain))
-            .GroupBy(d => d.SecondLevelDomain)
+            .Where(d => !string.IsNullOrEmpty(d.FirstLevelDomain))
+            .GroupBy(d => d.FirstLevelDomain)
             .ToDictionary(g => g.Key, g => _objectMapper.Map<DappInfo, DAppDto>(g.First()));
     }
 
