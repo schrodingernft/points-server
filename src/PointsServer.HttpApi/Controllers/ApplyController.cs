@@ -39,4 +39,11 @@ public class ApplyController : PointsServerController
     {
         return await _applyService.DomainCheckAsync(input);
     }
+    
+    [Authorize]
+    [HttpGet("internal/changeWorkerTime")]
+    public async Task<bool> InternalChangeWorkerTimeAsync(long milliseconds)
+    {
+        return await _applyService.InternalChangeWorkerTimeAsync(milliseconds);
+    }
 }

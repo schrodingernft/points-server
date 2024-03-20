@@ -36,6 +36,7 @@ public class PointsServerApplicationModule : AbpModule
         Configure<DappOption>(configuration.GetSection("Dapp"));
         Configure<PointsRulesOption>(configuration.GetSection("PointsRules"));
         Configure<ApplyConfirmOptions>(configuration.GetSection("ApplyConfirm"));
+        Configure<InternalWhiteListOptions>(configuration.GetSection("InternalWhiteList"));
         context.Services.AddHttpClient();
     }
 }

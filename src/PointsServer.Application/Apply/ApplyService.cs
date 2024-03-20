@@ -13,6 +13,8 @@ using PointsServer.Common;
 using PointsServer.Common.AElfSdk;
 using PointsServer.DApps.Provider;
 using PointsServer.Grains.Grain.Operator;
+using PointsServer.Grains.Grain.Worker;
+using PointsServer.Grains.State.Worker;
 using PointsServer.Options;
 using PointsServer.Points.Dtos;
 using PointsServer.Points.Provider;
@@ -34,13 +36,15 @@ public class ApplyService : PointsPlatformAppService, IApplyService
     private readonly IUserInformationProvider _userInformationProvider;
     private readonly IContractProvider _contractProvider;
     private readonly ApplyConfirmOptions _applyConfirmOptions;
+    private readonly InternalWhiteListOptions _internalWhiteListOptions;
     private readonly ILogger<ApplyService> _logger;
     private readonly IPointsProvider _pointsProvider;
 
     public ApplyService(IOperatorDomainProvider operatorDomainProvider, IClusterClient clusterClient,
         IDistributedEventBus distributedEventBus, IObjectMapper objectMapper,
         IUserInformationProvider userInformationProvider, IContractProvider contractProvider,
-        IOptionsSnapshot<ApplyConfirmOptions> applyConfirmOptions,IPointsProvider pointsProvider, ILogger<ApplyService> logger)
+        IOptionsSnapshot<ApplyConfirmOptions> applyConfirmOptions,IPointsProvider pointsProvider, ILogger<ApplyService> logger, 
+        IOptionsSnapshot<InternalWhiteListOptions> internalWhiteListOptions)
     {
         _operatorDomainProvider = operatorDomainProvider;
         _clusterClient = clusterClient;
@@ -50,6 +54,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
         _contractProvider = contractProvider;
         _applyConfirmOptions = applyConfirmOptions.Value;
         _logger = logger;
+        _internalWhiteListOptions = internalWhiteListOptions.Value;
         _pointsProvider = pointsProvider;
     }
 
@@ -155,5 +160,25 @@ public class ApplyService : PointsPlatformAppService, IApplyService
 
         return domainCheckDto;
     }
-    
+
+    public async Task<bool> InternalChangeWorkerTimeAsync(long milliseconds)
+    {
+        var userInfo = await _userInformationProvider.GetUserById(CurrentUser.GetId());
+
+        if (!_internalWhiteListOptions.WhiteList.Contains(userInfo.CaAddressMain))
+        {
+            throw new Exception("invalid address");
+        }
+        
+        var dto = new WorkerOptionState
+        {
+            Type = CommonConstant.PointsSumWorker,
+            LatestExecuteTime = milliseconds
+        };
+        var workerOptionGrain = _clusterClient.GetGrain<IWorkerOptionGrain>(dto.Type);
+        
+        var result = await workerOptionGrain.UpdateLatestExecuteTimeAsync(dto);
+
+        return result.Success;
+    }
 }
