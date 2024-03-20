@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using AElf.Indexing.Elasticsearch;
 using Microsoft.Extensions.Logging;
 using PointsServer.Common;
+using PointsServer.DApps;
+using PointsServer.DApps.Dtos;
 using PointsServer.Grains.State.Worker;
 using PointsServer.Operator;
 using PointsServer.Points;
@@ -32,11 +34,13 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
     private readonly INESTRepository<OperatorPointsRankSumIndex, string> _repository;
     private readonly IPointsSumProvider _pointsSumProvider;
     private readonly ILogger<PointsSumService> _logger;
+    private readonly IDAppService _dAppService;
 
     public PointsSumService(IPointsIndexerProvider pointsIndexerProvider,
         LatestExecuteTimeProvider latestExecuteTimeProvider,
         IObjectMapper objectMapper, INESTRepository<OperatorPointsRankSumIndex, string> repository,
-        IPointsSumProvider pointsSumProvider, IPointsProvider pointsProvider, ILogger<PointsSumService> logger)
+        IPointsSumProvider pointsSumProvider, IPointsProvider pointsProvider, ILogger<PointsSumService> logger, 
+        IDAppService dAppService)
     {
         _pointsIndexerProvider = pointsIndexerProvider;
         _latestExecuteTimeProvider = latestExecuteTimeProvider;
@@ -45,6 +49,7 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
         _pointsSumProvider = pointsSumProvider;
         _pointsProvider = pointsProvider;
         _logger = logger;
+        _dAppService = dAppService;
     }
 
     public async Task RecordPointsSumAsync()
@@ -81,10 +86,12 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
         var domainDic =
             await _pointsSumProvider.GetKolInviterRelationShipByDomainsAsync(userRoleDomains.Distinct().ToList());
         
-        var pointsSumIndexList = await ConvertDtoToIndexAsync(pointsSumList, domainDic);
-
         try
         {
+            var dappDomainDic = _dAppService.GetDappDomainDic();
+
+            var pointsSumIndexList = await ConvertDtoToIndexAsync(pointsSumList, domainDic, dappDomainDic);
+
             if (pointsSumIndexList.IsNullOrEmpty())
             {
                 _logger.LogInformation("RecordPointsSumAsync BulkAddOrUpdateAsync is null");
@@ -110,14 +117,15 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
     }
 
     private async Task<List<OperatorPointsRankSumIndex>> ConvertDtoToIndexAsync(List<PointsSumDto> pointsSumList,
-        IReadOnlyDictionary<string, OperatorDomainInfoIndex> domainDic)
+        IReadOnlyDictionary<string, OperatorDomainInfoIndex> domainDic, Dictionary<string, DAppDto> dappDomainDic)
     {
         var pointsSumIndexList = new List<OperatorPointsRankSumIndex>();
 
         foreach (var pointsSumDto in pointsSumList)
         {
             var operatorPointSumIndex = _objectMapper.Map<PointsSumDto, OperatorPointsRankSumIndex>(pointsSumDto);
-            var relationshipFlag = domainDic.TryGetValue(operatorPointSumIndex.Domain, out var operatorDomain);
+            var domain = operatorPointSumIndex.Domain;
+            var relationshipFlag = domainDic.TryGetValue(domain, out var operatorDomain);
             switch (operatorPointSumIndex.Role)
             {
                 case OperatorRole.User when relationshipFlag:
@@ -148,19 +156,25 @@ public class PointsSumService : IPointsSumService, ISingletonDependency
             if (!relationshipFlag)
             {
                 _logger.LogInformation(
-                    "RecordPointsSumAsync: local Es not find,to indexer find begin, domain: {domain}",
-                    operatorPointSumIndex.Domain);
-                var operatorDomainDto = await _pointsProvider.GetOperatorDomainInfoAsync(
-                    new GetOperatorDomainInfoInput()
-                    {
-                        Domain = operatorPointSumIndex.Domain
-                    });
-                if (operatorDomainDto != null)
+                    "RecordPointsSumAsync: local Es not find,to indexer find begin, domain: {domain}", domain);
+                if (dappDomainDic.TryGetValue(domain, out var dappDto))
                 {
-                    operatorPointSumIndex.DappName = operatorDomainDto.DappId;
-                    _logger.LogInformation(
-                        "RecordPointsSumAsync: local Es not find,to indexer find end, domain: {domain}",
-                        operatorDomainDto.Domain);
+                    operatorPointSumIndex.DappName = dappDto.DappId;
+                }
+                else
+                {
+                    var operatorDomainDto = await _pointsProvider.GetOperatorDomainInfoAsync(
+                        new GetOperatorDomainInfoInput()
+                        {
+                            Domain = domain
+                        });
+                    if (operatorDomainDto != null)
+                    {
+                        operatorPointSumIndex.DappName = operatorDomainDto.DappId;
+                        _logger.LogInformation(
+                            "RecordPointsSumAsync: local Es not find,to indexer find end, domain: {domain}",
+                            operatorDomainDto.Domain);
+                    }
                 }
             }
 

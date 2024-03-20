@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AElf.Indexing.Elasticsearch;
 using GraphQL;
+using Microsoft.Extensions.Logging;
 using Nest;
 using PointsServer.Common;
 using PointsServer.Common.GraphQL;
@@ -32,12 +33,14 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
 {
     private readonly INESTRepository<OperatorPointsRankSumIndex, string> _pointsSumIndexRepository;
     private readonly IGraphQlHelper _graphQlHelper;
+    private readonly ILogger<PointsProvider> _logger;
 
     public PointsProvider(
-        INESTRepository<OperatorPointsRankSumIndex, string> pointsSumIndexRepository, IGraphQlHelper graphQlHelper)
+        INESTRepository<OperatorPointsRankSumIndex, string> pointsSumIndexRepository, IGraphQlHelper graphQlHelper, ILogger<PointsProvider> logger)
     {
         _pointsSumIndexRepository = pointsSumIndexRepository;
         _graphQlHelper = graphQlHelper;
+        _logger = logger;
     }
 
     public async Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListAsync(
@@ -176,10 +179,12 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
 
     public async Task<OperatorDomainDto> GetOperatorDomainInfoAsync(GetOperatorDomainInfoInput queryInput)
     {
-        var indexerResult = await _graphQlHelper.QueryAsync<OperatorDomainIndexerQueryDto>(new GraphQLRequest
+        try
         {
-            Query =
-                @"query($domain:String!){
+            var indexerResult = await _graphQlHelper.QueryAsync<OperatorDomainIndexerQueryDto>(new GraphQLRequest
+            {
+                Query =
+                    @"query($domain:String!){
                     operatorDomainInfo(input: {domain:$domain}){
                         id,
                         domain,
@@ -188,13 +193,19 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
     					dappId               
                 }
             }",
-            Variables = new
-            {
-                domain = queryInput.Domain
-            }
-        });
+                Variables = new
+                {
+                    domain = queryInput.Domain
+                }
+            });
 
-        return indexerResult?.OperatorDomainInfo;
+            return indexerResult?.OperatorDomainInfo;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "GetOperatorDomainInfoAsync Exception domain:{Domain}", queryInput.Domain);
+            return null;
+        }
     }
 
     private Expression<Func<OperatorPointsRankSumIndex, object>> GetSortBy(SortingKeywordType sortingKeyWord)
