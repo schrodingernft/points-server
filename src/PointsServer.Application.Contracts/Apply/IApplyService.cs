@@ -9,4 +9,5 @@ public interface IApplyService
     Task<ApplyConfirmDto> ApplyConfirmAsync(ApplyConfirmInput input);
     Task<DomainCheckDto> DomainCheckAsync(ApplyCheckInput input);
     Task<bool> InternalChangeWorkerTimeAsync(long milliseconds);
+    Task<long> InternalGetWorkerTimeAsync();
 }

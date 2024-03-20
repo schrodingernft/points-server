@@ -181,4 +181,26 @@ public class ApplyService : PointsPlatformAppService, IApplyService
 
         return result.Success;
     }
+
+    public async Task<long> InternalGetWorkerTimeAsync()
+    {
+        var userInfo = await _userInformationProvider.GetUserById(CurrentUser.GetId());
+
+        if (!_internalWhiteListOptions.WhiteList.Contains(userInfo.CaAddressMain))
+        {
+            throw new Exception("invalid address");
+        }
+        
+        
+        var workerOptionGrain = _clusterClient.GetGrain<IWorkerOptionGrain>(CommonConstant.PointsSumWorker);
+
+        var result = await workerOptionGrain.GetLatestExecuteTimeAsync();
+
+        if (!result.Success)
+        {
+            throw new UserFriendlyException(result.Message);
+        }
+
+        return result.Data;
+    }
 }

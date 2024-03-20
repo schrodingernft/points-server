@@ -46,4 +46,11 @@ public class ApplyController : PointsServerController
     {
         return await _applyService.InternalChangeWorkerTimeAsync(milliseconds);
     }
+    
+    [Authorize]
+    [HttpGet("internal/getWorkerTime")]
+    public async Task<long> InternalGetWorkerTimeAsync()
+    {
+        return await _applyService.InternalGetWorkerTimeAsync();
+    }
 }
