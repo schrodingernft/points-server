@@ -9,6 +9,7 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Providers.MongoDB.Configuration;
 using PointsServer.Common.GraphQL;
+using PointsServer.DApps;
 using PointsServer.Grains;
 using PointsServer.MongoDB;
 using PointsServer.Options;
@@ -54,6 +55,7 @@ public class PointsServerWorkerModule : AbpModule
         context.Services.AddSingleton<ILatestExecuteTimeProvider, LatestExecuteTimeProvider>();
         context.Services.AddSingleton<IGraphQlHelper, GraphQlHelper>();
         context.Services.AddSingleton<IPointsProvider, PointsProvider>();
+        context.Services.AddSingleton<IDAppService, DAppService>();
         ConfigureGraphQl(context, configuration);
         ConfigureOrleans(context, configuration);
     }
