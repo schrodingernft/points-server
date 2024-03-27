@@ -1,20 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphQL;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using PointsServer.Common;
-using PointsServer.Common.GraphQL;
 using PointsServer.DApps;
 using PointsServer.DApps.Dtos;
 using PointsServer.DApps.Provider;
 using PointsServer.Options;
 using PointsServer.Points.Dtos;
 using PointsServer.Points.Provider;
-using PointsServer.Worker.Provider.Dtos;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.ObjectMapping;
@@ -30,12 +27,11 @@ public class PointsService : IPointsService, ISingletonDependency
     private readonly ILogger<PointsService> _logger;
     private readonly IOperatorDomainProvider _operatorDomainProvider;
     private readonly IDAppService _dAppService;
-    private readonly IDomainProvider _domainProvider;
     private const int SplitSize = 1;
 
     public PointsService(IObjectMapper objectMapper, IPointsProvider pointsProvider,
         IPointsRulesProvider pointsRulesProvider, IOperatorDomainProvider operatorDomainProvider,
-        ILogger<PointsService> logger, IDAppService dAppService, IDomainProvider domainProvider)
+        ILogger<PointsService> logger, IDAppService dAppService)
     {
         _objectMapper = objectMapper;
         _pointsRulesProvider = pointsRulesProvider;
@@ -43,7 +39,6 @@ public class PointsService : IPointsService, ISingletonDependency
         _operatorDomainProvider = operatorDomainProvider;
         _logger = logger;
         _dAppService = dAppService;
-        _domainProvider = domainProvider;
     }
 
     public async Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input)
@@ -150,12 +145,12 @@ public class PointsService : IPointsService, ISingletonDependency
 
         resp.PointDetails = actionPointList;
 
-        var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain);
+        var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain, true);
         if (domainInfo != null)
         {
             resp.Describe = domainInfo.Descibe;
-            resp.Icon = GetDappDto(domainInfo.DappName).Icon;
-            resp.DappName = GetDappDto(domainInfo.DappName).DappName;
+            resp.Icon = GetDappDto(domainInfo.DappId).Icon;
+            resp.DappName = GetDappDto(domainInfo.DappId).DappName;
             resp.Domain = domainInfo.Domain;
         }
 
@@ -273,12 +268,12 @@ public class PointsService : IPointsService, ISingletonDependency
 
         resp.PointDetails = actionPointList;
 
-        var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain);
+        var domainInfo = await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain, true);
         if (domainInfo != null)
         {
             resp.Describe = domainInfo.Descibe;
-            resp.Icon = GetDappDto(domainInfo.DappName).Icon;
-            resp.DappName = GetDappDto(domainInfo.DappName).DappName;
+            resp.Icon = GetDappDto(domainInfo.DappId).Icon;
+            resp.DappName = GetDappDto(domainInfo.DappId).DappName;
             resp.Domain = domainInfo.Domain;
         }
 
@@ -339,7 +334,7 @@ public class PointsService : IPointsService, ISingletonDependency
 
     public async Task<MyPointDetailsDto> GetMyPointsAsync(GetMyPointsInput input)
     {
-        var domain = await _domainProvider.GetUserRegisterDomainByAddressAsync(input.Address);
+        var domain = await _pointsProvider.GetUserRegisterDomainByAddressAsync(input.Address);
         if (domain == null)
         {
             return new MyPointDetailsDto();
@@ -491,54 +486,5 @@ public class PointsService : IPointsService, ISingletonDependency
     {
         var dappIdDic = _dAppService.GetDappIdDic();
         return dappIdDic[dappId];
-    }
-}
-
-public interface IDomainProvider
-{
-    Task<string> GetUserRegisterDomainByAddressAsync(string Address);
-}
-
-public class DomainProvider : IDomainProvider, ISingletonDependency
-{
-    private readonly IGraphQlHelper _graphQlHelper;
-    private readonly ILogger<DomainProvider> _logger;
-
-    public DomainProvider(IGraphQlHelper graphQlHelper, ILogger<DomainProvider> logger)
-    {
-        _graphQlHelper = graphQlHelper;
-        _logger = logger;
-    }
-
-    public async Task<string> GetUserRegisterDomainByAddressAsync(string Address)
-    {
-        var indexerResult = await _graphQlHelper.QueryAsync<DomainUserRelationShipQuery>(new GraphQLRequest
-        {
-            Query =
-                @"query($domainIn:[String!]!,$addressIn:[String!]!,$dappNameIn:[String!]!,$skipCount:Int!,$maxResultCount:Int!){
-                    queryUserAsync(input: {domainIn:$domainIn,addressIn:$addressIn,dappNameIn:$dappNameIn,skipCount:$skipCount,maxResultCount:$maxResultCount}){
-                        totalRecordCount
-                        data {
-                          id
-                          domain
-                          address
-                          dappName
-                          createTime
-                        }
-                }
-            }",
-            Variables = new
-            {
-                domainIn = new List<string>(), dappNameIn = new List<string>(),
-                addressIn = new List<string>() { Address }, skipCount = 0, maxResultCount = 1
-            }
-        });
-        var ans = indexerResult.QueryUserAsync.Data;
-        if (ans == null || ans.Count == 0)
-        {
-            return null;
-        }
-
-        return ans[0].Domain;
     }
 }

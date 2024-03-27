@@ -33,6 +33,7 @@ public class OperatorDomainDto
     public string DappId { get; set; }  
     
     public DateTime CreateTime { get; set; } 
+    public string Descibe { get; set; }
 }
 
 public class RankingDetailIndexerDto

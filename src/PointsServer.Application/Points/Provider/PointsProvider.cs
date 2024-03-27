@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using PointsServer.Common;
 using PointsServer.Common.GraphQL;
 using PointsServer.Points.Dtos;
+using PointsServer.Worker.Provider.Dtos;
 using Volo.Abp.DependencyInjection;
 
 namespace PointsServer.Points.Provider;
@@ -26,6 +27,8 @@ public interface IPointsProvider
 
     Task<List<UserReferralCountDto>> GetUserReferralCountAsync(List<string> addressList, int skipCount = 0,
         int maxResultCount = 1000);
+    
+    Task<string> GetUserRegisterDomainByAddressAsync(string address);
 }
 
 public class PointsProvider : IPointsProvider, ISingletonDependency
@@ -255,5 +258,37 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
             _logger.LogError(e, "GetUserReferralCountAsync error");
             return new List<UserReferralCountDto>();
         }
+    }
+    
+    public async Task<string> GetUserRegisterDomainByAddressAsync(string Address)
+    {
+        var indexerResult = await _graphQlHelper.QueryAsync<DomainUserRelationShipQuery>(new GraphQLRequest
+        {
+            Query =
+                @"query($domainIn:[String!]!,$addressIn:[String!]!,$dappNameIn:[String!]!,$skipCount:Int!,$maxResultCount:Int!){
+                    queryUserAsync(input: {domainIn:$domainIn,addressIn:$addressIn,dappNameIn:$dappNameIn,skipCount:$skipCount,maxResultCount:$maxResultCount}){
+                        totalRecordCount
+                        data {
+                          id
+                          domain
+                          address
+                          dappName
+                          createTime
+                        }
+                }
+            }",
+            Variables = new
+            {
+                domainIn = new List<string>(), dappNameIn = new List<string>(),
+                addressIn = new List<string>() { Address }, skipCount = 0, maxResultCount = 1
+            }
+        });
+        var ans = indexerResult.QueryUserAsync.Data;
+        if (ans == null || ans.Count == 0)
+        {
+            return null;
+        }
+
+        return ans[0].Domain;
     }
 }

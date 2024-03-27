@@ -136,7 +136,7 @@ public class ApplyService : PointsPlatformAppService, IApplyService
     public async Task<DomainCheckDto> DomainCheckAsync(ApplyCheckInput input)
     {
         var domainCheckDto = new DomainCheckDto();
-        _logger.LogInformation("DomainCheckAsync:"+input.Domain+","+await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain));
+        _logger.LogInformation("DomainCheckAsync:" + input.Domain);
         if (await _operatorDomainProvider.GetOperatorDomainIndexAsync(input.Domain) != null)
         {
             domainCheckDto.Exists = true;
