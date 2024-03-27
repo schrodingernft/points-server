@@ -4,7 +4,6 @@ using PointsServer.Common;
 using PointsServer.DApps.Dtos;
 using PointsServer.Grains.Grain.Operator;
 using PointsServer.Options;
-using PointsServer.Points;
 using PointsServer.Points.Dtos;
 using PointsServer.Points.Provider;
 using PointsServer.Users;
@@ -21,11 +20,11 @@ public class PointsServerApplicationAutoMapperProfile : Profile
         CreateMap<DappInfo, DAppDto>().ReverseMap();
         CreateMap<GetRankingDetailInput, GetOperatorPointsActionSumInput>();
         CreateMap<GetRankingListInput, GetOperatorPointsSumIndexListInput>();
-        CreateMap<OperatorPointsRankSumIndex, RankingListDto>();
+        CreateMap<PointsSumIndexerDto, RankingListDto>();
         CreateMap<GetPointsEarnedListInput, GetOperatorPointsSumIndexListByAddressInput>().ForMember(
             destination => destination.Type,
             opt => opt.MapFrom(source => source.Role));
-        CreateMap<OperatorPointsRankSumIndex, PointsEarnedListDto>();
+        CreateMap<PointsSumIndexerDto, PointsEarnedListDto>();
         CreateMap<GetPointsEarnedDetailInput, GetOperatorPointsActionSumInput>();
         CreateMap<GetMyPointsInput, GetOperatorPointsActionSumInput>();
         CreateMap<RankingDetailIndexerDto, ActionPoints>()

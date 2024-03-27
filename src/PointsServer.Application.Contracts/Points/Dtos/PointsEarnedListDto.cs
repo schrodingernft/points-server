@@ -22,4 +22,6 @@ public class PointsEarnedListDto
     public long UpdateTime { get; set; }
     public decimal Rate { get; set; }
     public int Decimal { get; set; }
+    public decimal InviteRate { get; set; }
+    public long InviteFollowersNumber { get; set; }
 }

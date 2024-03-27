@@ -22,6 +22,10 @@ public class ActionPoints
     public long FollowersNumber { get; set; }
     public decimal Rate { get; set; }
     public string DisplayName{ get; set; }
+    public decimal InviteRate { get; set; }
+    public long InviteFollowersNumber { get; set; }
+    public decimal ThirdRate { get; set; }
+    public long ThirdFollowersNumber { get; set; }
 }
 
 public class EarnedPointDto : ActionPoints

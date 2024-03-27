@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphQL;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
@@ -16,17 +14,15 @@ using PointsServer.DApps.Provider;
 using PointsServer.Options;
 using PointsServer.Points.Dtos;
 using PointsServer.Points.Provider;
-using PointsServer.Users.Provider;
 using PointsServer.Worker.Provider.Dtos;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.ObjectMapping;
-using Volo.Abp.Users;
 using Constants = PointsServer.Common.Constants;
 
 namespace PointsServer.Points;
 
-public class PointsService : PointsPlatformAppService, IPointsService, ISingletonDependency
+public class PointsService : IPointsService, ISingletonDependency
 {
     private readonly IObjectMapper _objectMapper;
     private readonly IPointsRulesProvider _pointsRulesProvider;
@@ -36,13 +32,10 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
     private readonly IDAppService _dAppService;
     private readonly IDomainProvider _domainProvider;
     private const int SplitSize = 1;
-    private readonly InternalWhiteListOptions _internalWhiteListOptions;
-    private readonly IUserInformationProvider _userInformationProvider;
-    
+
     public PointsService(IObjectMapper objectMapper, IPointsProvider pointsProvider,
         IPointsRulesProvider pointsRulesProvider, IOperatorDomainProvider operatorDomainProvider,
-        ILogger<PointsService> logger, IDAppService dAppService, IDomainProvider domainProvider, 
-        IOptionsSnapshot<InternalWhiteListOptions> internalWhiteListOptions, IUserInformationProvider userInformationProvider)
+        ILogger<PointsService> logger, IDAppService dAppService, IDomainProvider domainProvider)
     {
         _objectMapper = objectMapper;
         _pointsRulesProvider = pointsRulesProvider;
@@ -51,8 +44,6 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
         _logger = logger;
         _dAppService = dAppService;
         _domainProvider = domainProvider;
-        _internalWhiteListOptions = internalWhiteListOptions.Value;
-        _userInformationProvider = userInformationProvider;
     }
 
     public async Task<PagedResultDto<RankingListDto>> GetRankingListAsync(GetRankingListInput input)
@@ -67,59 +58,48 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
             _pointsProvider.GetOperatorPointsSumIndexListAsync(
                 _objectMapper.Map<GetRankingListInput, GetOperatorPointsSumIndexListInput>(input));
 
-
         var resp = new PagedResultDto<RankingListDto>();
         if (pointsList.TotalCount == 0)
         {
             return resp;
         }
 
-        resp.TotalCount = pointsList.TotalCount;
-        var items = new List<RankingListDto>();
+        var pointsRules =
+            await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
 
-        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
-        var domains = pointsList.IndexList
+        var domains = pointsList.Data
             .Select(p => p.Domain).Distinct()
             .ToList();
-        var splitDomainList = SplitDomainList(domains);
-        var kolFollowersCountDic = new Dictionary<string, long>();
-        var tasks = splitDomainList.Select(domainList => _pointsProvider.GetKolFollowersCountDicAsync(domainList));
-        var taskResults = await Task.WhenAll(tasks);
-        foreach (var result in taskResults)
+        var kolFollowersCountDic = await GetKolFollowersCountDicAsync(domains);
+
+        var addressList = pointsList.Data
+            .Select(p => p.Address).Distinct()
+            .ToList();
+        var inviteFollowersCountDic = await GetInviteFollowersCountDicAsync(addressList);
+
+        var items = new List<RankingListDto>();
+        foreach (var index in pointsList.Data)
         {
-            kolFollowersCountDic.AddIfNotContains(result);
-        }
-        
-        foreach (var index in pointsList.IndexList)
-        {
-            var dto = _objectMapper.Map<OperatorPointsRankSumIndex, RankingListDto>(index);
+            var dto = _objectMapper.Map<PointsSumIndexerDto, RankingListDto>(index);
             if (kolFollowersCountDic.TryGetValue(index.Domain, out var followersNumber))
             {
                 dto.FollowersNumber = followersNumber;
             }
 
+            if (inviteFollowersCountDic.TryGetValue(index.Address, out var inviteFollowersNumber))
+            {
+                dto.InviteFollowersNumber = inviteFollowersNumber;
+            }
+
+            dto.InviteRate = pointsRules.SecondLevelUserAmount;
             dto.Rate = pointsRules.KolAmount;
             dto.Decimal = pointsRules.Decimal;
             items.Add(dto);
         }
 
+        resp.TotalCount = pointsList.TotalCount;
         resp.Items = items;
-
-        _logger.LogInformation("GetRankingListAsync, resp:{resp}", JsonConvert.SerializeObject(resp));
         return resp;
-    }
-    
-    private static List<List<string>> SplitDomainList(List<string> domains)
-    {
-        var splitList = new List<List<string>>();
-
-        for (var i = 0; i < domains.Count; i += SplitSize)
-        {
-            var sublist = domains.Skip(i).Take(SplitSize).ToList();
-            splitList.Add(sublist);
-        }
-
-        return splitList;
     }
 
     public async Task<RankingDetailDto> GetRankingDetailAsync(GetRankingDetailInput input)
@@ -136,10 +116,15 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
         }
 
         var actionPointList =
-            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data).OrderBy(o => o.Symbol).ToList();;
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data)
+                .OrderBy(o => o.Symbol).ToList();
+
         var kolFollowersCountDic =
             await _pointsProvider.GetKolFollowersCountDicAsync(new List<string> { input.Domain });
-        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
+        var pointsRules =
+            await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
+        var inviteFollowersCountDic =
+            await GetInviteFollowersCountDicAsync(new List<string> { actionRecordPoints.Data.First().Address });
 
         foreach (var actionPoints in actionPointList)
         {
@@ -150,8 +135,15 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
                     actionPoints.FollowersNumber = followersNumber;
                 }
 
+                if (inviteFollowersCountDic.TryGetValue(input.Domain, out var inviteFollowersNumber))
+                {
+                    actionPoints.InviteFollowersNumber = inviteFollowersNumber;
+                }
+
                 actionPoints.Rate = pointsRules.KolAmount;
+                actionPoints.InviteRate = pointsRules.SecondLevelUserAmount;
             }
+
             actionPoints.Decimal = pointsRules.Decimal;
             actionPoints.DisplayName = await GetDisplayNameAsync(input.DappName, actionPoints);
         }
@@ -167,7 +159,6 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
             resp.Domain = domainInfo.Domain;
         }
 
-        _logger.LogInformation("GetRankingDetailAsync, resp:{req}", JsonConvert.SerializeObject(input));
         return resp;
     }
 
@@ -184,26 +175,42 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
             return resp;
         }
 
-        resp.TotalCount = pointsList.TotalCount;
-
-        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
-        var domains = pointsList.IndexList
+        var pointsRules =
+            await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
+        var domains = pointsList.Data
             .Select(p => p.Domain).Distinct()
             .ToList();
-        var kolFollowersCountDic = await _pointsProvider.GetKolFollowersCountDicAsync(domains);
+        var kolFollowersCountDic = await GetKolFollowersCountDicAsync(domains);
+
+        var addressList = pointsList.Data
+            .Select(p => p.Address).Distinct()
+            .ToList();
+        var inviteFollowersCountDic = await GetInviteFollowersCountDicAsync(addressList);
 
         var items = new List<PointsEarnedListDto>();
-        foreach (var operatorPointSumIndex in pointsList.IndexList)
+        foreach (var operatorPointSumIndex in pointsList.Data)
         {
             var pointsEarnedListDto =
-                _objectMapper.Map<OperatorPointsRankSumIndex, PointsEarnedListDto>(operatorPointSumIndex);
+                _objectMapper.Map<PointsSumIndexerDto, PointsEarnedListDto>(operatorPointSumIndex);
 
             if (kolFollowersCountDic.TryGetValue(operatorPointSumIndex.Domain, out var followersNumber))
             {
                 pointsEarnedListDto.FollowersNumber = followersNumber;
             }
 
-            pointsEarnedListDto.Rate = pointsEarnedListDto.Role == OperatorRole.Kol ? pointsRules.KolAmount : pointsRules.InviterAmount;
+            if (pointsEarnedListDto.Role == OperatorRole.Kol)
+            {
+                if (inviteFollowersCountDic.TryGetValue(operatorPointSumIndex.Address, out var inviteFollowersNumber))
+                {
+                    pointsEarnedListDto.InviteFollowersNumber = inviteFollowersNumber;
+                }
+
+                pointsEarnedListDto.InviteRate = pointsRules.SecondLevelUserAmount;
+            }
+
+            pointsEarnedListDto.Rate = pointsEarnedListDto.Role == OperatorRole.Kol
+                ? pointsRules.KolAmount
+                : pointsRules.InviterAmount;
             pointsEarnedListDto.Decimal = pointsRules.Decimal;
 
             pointsEarnedListDto.DappName = GetDappDto(operatorPointSumIndex.DappName).DappName;
@@ -211,26 +218,8 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
             items.Add(pointsEarnedListDto);
         }
 
+        resp.TotalCount = pointsList.TotalCount;
         resp.Items = items;
-
-
-        decimal totalEarnings = 0;
-        long remain = 0;
-        const int maxResultCount = 20;
-        queryInput.SkipCount = 0;
-        do
-        {
-            var ret = await _pointsProvider.GetOperatorPointsSumIndexListByAddressAsync(queryInput);
-
-            //ret.IndexList.ToList().ForEach(index => { totalEarnings += index.Amount; });
-
-            queryInput.SkipCount += maxResultCount;
-            remain = ret.TotalCount - queryInput.SkipCount;
-        } while (remain > 0);
-
-        resp.TotalEarned = totalEarnings;
-
-        _logger.LogInformation("GetPointsEarnedListAsync, resp:{resp}", JsonConvert.SerializeObject(resp));
         return resp;
     }
 
@@ -247,10 +236,14 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
         }
 
         var actionPointList =
-            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data).OrderBy(o => o.Symbol).ToList();
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<ActionPoints>>(actionRecordPoints.Data)
+                .OrderBy(o => o.Symbol).ToList();
         var kolFollowersCountDic =
             await _pointsProvider.GetKolFollowersCountDicAsync(new List<string> { input.Domain });
-        var pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
+        var pointsRules =
+            await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, CommonConstant.SelfIncreaseAction);
+        var inviteFollowersCountDic =
+            await GetInviteFollowersCountDicAsync(new List<string> { actionRecordPoints.Data.First().Address });
 
         foreach (var actionPoints in actionPointList)
         {
@@ -259,6 +252,16 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
                 if (kolFollowersCountDic.TryGetValue(input.Domain, out var followersNumber))
                 {
                     actionPoints.FollowersNumber = followersNumber;
+                }
+
+                if (input.Role == OperatorRole.Kol)
+                {
+                    if (inviteFollowersCountDic.TryGetValue(input.Domain, out var inviteFollowersNumber))
+                    {
+                        actionPoints.InviteFollowersNumber = inviteFollowersNumber;
+                    }
+
+                    actionPoints.InviteRate = pointsRules.SecondLevelUserAmount;
                 }
 
                 actionPoints.Rate = input.Role == OperatorRole.Kol ? pointsRules.KolAmount : pointsRules.InviterAmount;
@@ -279,8 +282,6 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
             resp.Domain = domainInfo.Domain;
         }
 
-
-        _logger.LogInformation("GetPointsEarnedDetailAsync, resp:{req}", JsonConvert.SerializeObject(resp));
         return resp;
     }
 
@@ -357,7 +358,8 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
         }
 
         var actionPointList =
-            _objectMapper.Map<List<RankingDetailIndexerDto>, List<EarnedPointDto>>(actionRecordPoints.Data).OrderBy(o => o.Symbol).ToList();
+            _objectMapper.Map<List<RankingDetailIndexerDto>, List<EarnedPointDto>>(actionRecordPoints.Data)
+                .OrderBy(o => o.Symbol).ToList();
 
         foreach (var earnedPointDto in actionPointList)
         {
@@ -420,7 +422,8 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
                     earnedPointDto.DisplayName = pointsRules.DisplayNamePattern;
                     break;
                 default:
-                    pointsRules = await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, Constants.DefaultAction);
+                    pointsRules =
+                        await _pointsRulesProvider.GetPointsRulesAsync(input.DappName, Constants.DefaultAction);
                     if (pointsRules == null) continue;
                     earnedPointDto.Decimal = pointsRules.Decimal;
                     earnedPointDto.DisplayName = Strings.Format(pointsRules.DisplayNamePattern, earnedPointDto.Action);
@@ -434,52 +437,60 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
         return resp;
     }
 
+    private async Task<Dictionary<string, long>> GetInviteFollowersCountDicAsync(List<string> addressList)
+    {
+        var res = new List<UserReferralCountDto>();
+        var skipCount = 0;
+        var maxResultCount = 5000;
+        List<UserReferralCountDto> list;
+        do
+        {
+            list = await _pointsProvider.GetUserReferralCountAsync(addressList, skipCount, maxResultCount);
+            var count = list.Count;
+            res.AddRange(list);
+            if (list.IsNullOrEmpty() || count < maxResultCount)
+            {
+                break;
+            }
+
+            skipCount += count;
+        } while (!list.IsNullOrEmpty());
+
+        return res.GroupBy(u => u.Referrer)
+            .ToDictionary(g => g.Key, g => g.First().InviteeNumber);
+    }
+
+    private async Task<Dictionary<string, long>> GetKolFollowersCountDicAsync(List<string> domains)
+    {
+        var splitDomainList = SplitDomainList(domains);
+        var kolFollowersCountDic = new Dictionary<string, long>();
+        var tasks = splitDomainList.Select(domainList => _pointsProvider.GetKolFollowersCountDicAsync(domainList));
+        var taskResults = await Task.WhenAll(tasks);
+        foreach (var result in taskResults)
+        {
+            kolFollowersCountDic.AddIfNotContains(result);
+        }
+
+        return kolFollowersCountDic;
+    }
+
+    private static List<List<string>> SplitDomainList(List<string> domains)
+    {
+        var splitList = new List<List<string>>();
+
+        for (var i = 0; i < domains.Count; i += SplitSize)
+        {
+            var sublist = domains.Skip(i).Take(SplitSize).ToList();
+            splitList.Add(sublist);
+        }
+
+        return splitList;
+    }
+
     private DAppDto GetDappDto(string dappId)
     {
         var dappIdDic = _dAppService.GetDappIdDic();
         return dappIdDic[dappId];
-    }
-    
-    
-    public async Task<PagedResultDto<RankingListDto>> GetRankingListAllAsync(GetRankingListInput input)
-    {
-        _logger.LogInformation("GetRankingListAsync, req:{req}", JsonConvert.SerializeObject(input));
-        var userInfo = await _userInformationProvider.GetUserById(CurrentUser.GetId());
-
-        if (!_internalWhiteListOptions.WhiteList.Contains(userInfo.CaAddressMain))
-        {
-            throw new Exception("invalid address");
-        }
-        
-        if (input != null && !CollectionUtilities.IsNullOrEmpty(input.Keyword))
-        {
-            input.SkipCount = 0;
-        }
-
-        var pointsList = await
-            _pointsProvider.GetAllPointsSumIndexListAsync(
-                _objectMapper.Map<GetRankingListInput, GetOperatorPointsSumIndexListInput>(input));
-
-
-        var resp = new PagedResultDto<RankingListDto>();
-        if (pointsList.TotalCount == 0)
-        {
-            return resp;
-        }
-
-        resp.TotalCount = pointsList.TotalCount;
-        var items = new List<RankingListDto>();
-        
-        foreach (var index in pointsList.IndexList)
-        {
-            var dto = _objectMapper.Map<OperatorPointsRankSumIndex, RankingListDto>(index);
-            items.Add(dto);
-        }
-
-        resp.Items = items;
-
-        _logger.LogInformation("GetRankingListAsync, resp:{resp}", JsonConvert.SerializeObject(resp));
-        return resp;
     }
 }
 

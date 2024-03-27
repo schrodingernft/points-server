@@ -15,6 +15,8 @@ public class PointsRules
     public string Symbol { get; set; }
     public decimal UserAmount { get; set; }
     public decimal KolAmount { get; set; }
+    public decimal SecondLevelUserAmount { get; set; }
+    public decimal ThirdLevelUserAmount { get; set; }
     public decimal InviterAmount { get; set; }
     public int Decimal { get; set; }
     public string DisplayNamePattern { get; set; }

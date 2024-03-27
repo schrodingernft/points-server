@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AElf.Indexing.Elasticsearch;
 using GraphQL;
 using Microsoft.Extensions.Logging;
-using Nest;
 using PointsServer.Common;
 using PointsServer.Common.GraphQL;
 using PointsServer.Points.Dtos;
@@ -16,128 +13,121 @@ namespace PointsServer.Points.Provider;
 
 public interface IPointsProvider
 {
-    public Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListAsync(GetOperatorPointsSumIndexListInput input);
-    
-    public Task<OperatorPointSumIndexList> GetAllPointsSumIndexListAsync(GetOperatorPointsSumIndexListInput input);
+    public Task<PointsSumIndexerListDto> GetOperatorPointsSumIndexListAsync(GetOperatorPointsSumIndexListInput input);
 
-    public Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListByAddressAsync(
+    public Task<PointsSumIndexerListDto> GetOperatorPointsSumIndexListByAddressAsync(
         GetOperatorPointsSumIndexListByAddressInput input);
 
     public Task<Dictionary<string, long>> GetKolFollowersCountDicAsync(List<string> domainList);
 
     Task<RankingDetailIndexerListDto> GetOperatorPointsActionSumAsync(GetOperatorPointsActionSumInput queryInput);
-    
+
     public Task<OperatorDomainDto> GetOperatorDomainInfoAsync(GetOperatorDomainInfoInput queryInput);
 
+    Task<List<UserReferralCountDto>> GetUserReferralCountAsync(List<string> addressList, int skipCount = 0,
+        int maxResultCount = 1000);
 }
 
 public class PointsProvider : IPointsProvider, ISingletonDependency
 {
-    private readonly INESTRepository<OperatorPointsRankSumIndex, string> _pointsSumIndexRepository;
     private readonly IGraphQlHelper _graphQlHelper;
     private readonly ILogger<PointsProvider> _logger;
 
-    public PointsProvider(
-        INESTRepository<OperatorPointsRankSumIndex, string> pointsSumIndexRepository, IGraphQlHelper graphQlHelper, ILogger<PointsProvider> logger)
+    public PointsProvider(IGraphQlHelper graphQlHelper, ILogger<PointsProvider> logger)
     {
-        _pointsSumIndexRepository = pointsSumIndexRepository;
         _graphQlHelper = graphQlHelper;
         _logger = logger;
     }
 
-    public async Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListAsync(
+    public async Task<PointsSumIndexerListDto> GetOperatorPointsSumIndexListAsync(
         GetOperatorPointsSumIndexListInput input)
     {
-        var mustQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
-
-        if (!input.Keyword.IsNullOrWhiteSpace())
+        try
         {
-            var shouldQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
-            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Domain).Value(input.Keyword)));
-            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Address).Value(input.Keyword)));
-            mustQuery.Add(q => q.Bool(b => b.Should(shouldQuery)));
+            var indexerResult = await _graphQlHelper.QueryAsync<IndexerRankingListQueryDto>(new GraphQLRequest
+            {
+                Query =
+                    @"query($keyword:String!, $dappId:String!, $sortingKeyWord:SortingKeywordType, $sorting:String!, $skipCount:Int!,$maxResultCount:Int!){
+                    getRankingList(input: {keyword:$keyword,dappId:$dappId,sortingKeyWord:$sortingKeyWord,sorting:$sorting,skipCount:$skipCount,maxResultCount:$maxResultCount}){
+                        totalRecordCount,
+                        data{
+                        domain,
+                        address,
+                        firstSymbolAmount,
+                        secondSymbolAmount,
+                        thirdSymbolAmount,
+    					fourSymbolAmount,
+    					fiveSymbolAmount,
+    					sixSymbolAmount,
+    					sevenSymbolAmount,
+    					eightSymbolAmount,
+    					nineSymbolAmount,
+    					updateTime,
+    					dappName,
+    					role,
+                    }
+                }
+            }",
+                Variables = new
+                {
+                    keyword = input.Keyword, dappId = input.DappName, sortingKeyWord = input.SortingKeyWord,
+                    sorting = input.Sorting, skipCount = input.SkipCount, maxResultCount = input.MaxResultCount,
+                }
+            });
+
+            return indexerResult.GetRankingList;
         }
-
-        mustQuery.Add(q => q.Terms(i =>
-            i.Field(f => f.DappName).Terms(input.DappName)));
-        mustQuery.Add(q => q.Terms(i =>
-            i.Field(f => f.Role).Terms(OperatorRole.Kol)));
-
-        QueryContainer Filter(QueryContainerDescriptor<OperatorPointsRankSumIndex> f) => f.Bool(b => b.Must(mustQuery));
-
-        var sortType = input.Sorting == "DESC" ? SortOrder.Descending : SortOrder.Ascending;
-        var result = await _pointsSumIndexRepository.GetListAsync(Filter, sortType: sortType,
-            sortExp: GetSortBy(input.SortingKeyWord), skip: input.SkipCount, limit: input.MaxResultCount);
-
-        return new OperatorPointSumIndexList
+        catch (Exception e)
         {
-            TotalCount = result.Item1,
-            IndexList = result.Item2
-        };
+            _logger.LogError(e, "getRankingList Indexer error");
+            return new PointsSumIndexerListDto();
+        }
     }
 
-    public async Task<OperatorPointSumIndexList> GetAllPointsSumIndexListAsync(
-        GetOperatorPointsSumIndexListInput input)
-    {
-        var mustQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
-
-        if (!input.Keyword.IsNullOrWhiteSpace())
-        {
-            var shouldQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
-            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Domain).Value(input.Keyword)));
-            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Address).Value(input.Keyword)));
-            mustQuery.Add(q => q.Bool(b => b.Should(shouldQuery)));
-        }
-
-        mustQuery.Add(q => q.Terms(i =>
-            i.Field(f => f.DappName).Terms(input.DappName)));
-
-        QueryContainer Filter(QueryContainerDescriptor<OperatorPointsRankSumIndex> f) => f.Bool(b => b.Must(mustQuery));
-
-        var sortType = input.Sorting == "DESC" ? SortOrder.Descending : SortOrder.Ascending;
-        var result = await _pointsSumIndexRepository.GetListAsync(Filter, sortType: sortType,
-            sortExp: GetSortBy(input.SortingKeyWord), skip: input.SkipCount, limit: input.MaxResultCount);
-
-        return new OperatorPointSumIndexList
-        {
-            TotalCount = result.Item1,
-            IndexList = result.Item2
-        };
-    }
-    
-    public async Task<OperatorPointSumIndexList> GetOperatorPointsSumIndexListByAddressAsync(
+    public async Task<PointsSumIndexerListDto> GetOperatorPointsSumIndexListByAddressAsync(
         GetOperatorPointsSumIndexListByAddressInput input)
     {
-        var mustQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
-        mustQuery.Add(q => q.Terms(i =>
-            i.Field(f => f.Address).Terms(input.Address)));
-        mustQuery.Add(q => q.Terms(i =>
-            i.Field(f => f.DappName).Terms(input.DappName)));
-
-        if (input.Type == OperatorRole.All)
+        try
         {
-            var shouldQuery = new List<Func<QueryContainerDescriptor<OperatorPointsRankSumIndex>, QueryContainer>>();
-            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Role).Value(OperatorRole.Kol)));
-            shouldQuery.Add(q => q.Term(i => i.Field(f => f.Role).Value(OperatorRole.Inviter)));
-            mustQuery.Add(q => q.Bool(b => b.Should(shouldQuery)));
+            var indexerResult = await _graphQlHelper.QueryAsync<IndexerPointsEarnedListQueryDto>(new GraphQLRequest
+            {
+                Query =
+                    @"query($address:String!, $dappId:String!, $type:OperatorRole, $sortingKeyWord:SortingKeywordType, $sorting:String!, $skipCount:Int!,$maxResultCount:Int!){
+                    getPointsEarnedList(input: {address:$address,dappId:$dappId,type:$type,sortingKeyWord:$sortingKeyWord,sorting:$sorting,skipCount:$skipCount,maxResultCount:$maxResultCount}){
+                        totalRecordCount,
+                        data{
+                        domain,
+                        address,
+                        firstSymbolAmount,
+                        secondSymbolAmount,
+                        thirdSymbolAmount,
+    					fourSymbolAmount,
+    					fiveSymbolAmount,
+    					sixSymbolAmount,
+    					sevenSymbolAmount,
+    					eightSymbolAmount,
+    					nineSymbolAmount,
+    					updateTime,
+    					dappName,
+    					role,
+                    }
+                }
+            }",
+                Variables = new
+                {
+                    address = input.Address, dappId = input.DappName, type = input.Type,
+                    sortingKeyWord = input.SortingKeyWord,
+                    sorting = input.Sorting, skipCount = input.SkipCount, maxResultCount = input.MaxResultCount,
+                }
+            });
+
+            return indexerResult.GetPointsEarnedList;
         }
-        else
+        catch (Exception e)
         {
-            mustQuery.Add(q => q.Term(i =>
-                i.Field(f => f.Role).Value(input.Type)));
+            _logger.LogError(e, "getPointsEarnedList Indexer error");
+            return new PointsSumIndexerListDto();
         }
-        
-        QueryContainer Filter(QueryContainerDescriptor<OperatorPointsRankSumIndex> f) => f.Bool(b => b.Must(mustQuery));
-
-        var sortType = input.Sorting == "DESC" ? SortOrder.Descending : SortOrder.Ascending;
-        var result = await _pointsSumIndexRepository.GetListAsync(Filter, sortType: sortType,
-            sortExp: GetSortBy(input.SortingKeyWord), skip: input.SkipCount, limit: input.MaxResultCount);
-
-        return new OperatorPointSumIndexList
-        {
-            TotalCount = result.Item1,
-            IndexList = result.Item2
-        };
     }
 
     public async Task<Dictionary<string, long>> GetKolFollowersCountDicAsync(List<string> domainList)
@@ -239,14 +229,31 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
         }
     }
 
-    private Expression<Func<OperatorPointsRankSumIndex, object>> GetSortBy(SortingKeywordType sortingKeyWord)
+    public async Task<List<UserReferralCountDto>> GetUserReferralCountAsync(List<string> addressList, int skipCount,
+        int maxResultCount)
     {
-        return sortingKeyWord switch
+        try
         {
-            SortingKeywordType.FirstSymbolAmount => a => a.FirstSymbolAmount,
-            SortingKeywordType.SecondSymbolAmount => a => a.SecondSymbolAmount,
-            SortingKeywordType.FiveSymbolAmount => a => a.FiveSymbolAmount,
-            _ => a => a.FirstSymbolAmount
-        };
+            var indexerResult = await _graphQlHelper.QueryAsync<UserReferralCountResultDto>(new GraphQLRequest
+            {
+                Query =
+                    @"query($referrerList:[String!]!,$skipCount:Int!,$maxResultCount:Int!){
+                    getUserReferralCounts(input: {referrerList:$referrerList}){
+                        totalRecordCount
+                        data{referrer,inviteNumber}
+                }
+            }",
+                Variables = new
+                {
+                    referrerList = addressList, skipCount = skipCount, maxResultCount = maxResultCount
+                }
+            });
+            return indexerResult.GetUserReferralCounts.Data;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "GetUserReferralCountAsync error");
+            return new List<UserReferralCountDto>();
+        }
     }
 }

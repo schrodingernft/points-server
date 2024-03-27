@@ -49,8 +49,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointsServer.Orleans.TestBa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointsServer.AuthServer", "src\PointsServer.AuthServer\PointsServer.AuthServer.csproj", "{429C5D54-047C-4CA5-AF6C-048FE6575B2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointsServer.Worker", "src\PointsServer.Worker\PointsServer.Worker.csproj", "{437F4885-8E63-4321-BC1B-DE99708C4BF6}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,10 +139,6 @@ Global
 		{429C5D54-047C-4CA5-AF6C-048FE6575B2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{429C5D54-047C-4CA5-AF6C-048FE6575B2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{429C5D54-047C-4CA5-AF6C-048FE6575B2A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{437F4885-8E63-4321-BC1B-DE99708C4BF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{437F4885-8E63-4321-BC1B-DE99708C4BF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{437F4885-8E63-4321-BC1B-DE99708C4BF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{437F4885-8E63-4321-BC1B-DE99708C4BF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -171,7 +165,6 @@ Global
 		{3388AFB4-A5FE-460C-A833-6C58E0D85112} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 		{0E98561B-9F55-448A-B1D4-777A7F27FC13} = {04DBDB01-70F4-4E06-B468-8F87850B22BE}
 		{429C5D54-047C-4CA5-AF6C-048FE6575B2A} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
-		{437F4885-8E63-4321-BC1B-DE99708C4BF6} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28315BFD-90E7-4E14-A2EA-F3D23AF4126F}

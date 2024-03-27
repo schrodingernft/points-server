@@ -18,4 +18,6 @@ public class Coefficient
     public decimal User { get; set; }
     public decimal Kol { get; set; }
     public decimal Inviter { get; set; }
+    public decimal SecondLevelUser { get; set; }
+    public decimal ThirdLevelUser { get; set; }
 }
