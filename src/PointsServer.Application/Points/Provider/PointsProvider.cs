@@ -260,7 +260,7 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
         }
     }
     
-    public async Task<string> GetUserRegisterDomainByAddressAsync(string Address)
+    public async Task<string> GetUserRegisterDomainByAddressAsync(string address)
     {
         var indexerResult = await _graphQlHelper.QueryAsync<DomainUserRelationShipQuery>(new GraphQLRequest
         {
@@ -280,7 +280,7 @@ public class PointsProvider : IPointsProvider, ISingletonDependency
             Variables = new
             {
                 domainIn = new List<string>(), dappNameIn = new List<string>(),
-                addressIn = new List<string>() { Address }, skipCount = 0, maxResultCount = 1
+                addressIn = new List<string>() { address }, skipCount = 0, maxResultCount = 1
             }
         });
         var ans = indexerResult.QueryUserAsync.Data;
