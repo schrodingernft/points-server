@@ -221,9 +221,6 @@ public class PointsService : PointsPlatformAppService, IPointsService, ISingleto
         do
         {
             var ret = await _pointsProvider.GetOperatorPointsSumIndexListByAddressAsync(queryInput);
-
-            //ret.IndexList.ToList().ForEach(index => { totalEarnings += index.Amount; });
-
             queryInput.SkipCount += maxResultCount;
             remain = ret.TotalCount - queryInput.SkipCount;
         } while (remain > 0);

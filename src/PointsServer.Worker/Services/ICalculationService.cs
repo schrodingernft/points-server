@@ -203,7 +203,7 @@ public class CalculationService : ICalculationService, ISingletonDependency
 
         var intervalTime = (int)((timeStamp - lastAccumulateTime) / 1000);
 
-        user.SecondSymbolAmount +=
+        user.SecondSymbolAmount += 
             (long)(intervalTime * _options.Coefficient.User * (long)Math.Pow(10, _options.Decimal));
         user.IncrementalSettlementTime = timeStamp;
 
