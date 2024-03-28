@@ -16,7 +16,7 @@ public class ActionPoints
     public string Action { get; set; }
     public string Symbol { get; set; }
     public int Decimal { get; set; }
-    public decimal Amount { get; set; }
+    public string Amount { get; set; }
     public long CreateTime { get; set; }
     public long UpdateTime { get; set; }
     public long FollowersNumber { get; set; }

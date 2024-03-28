@@ -45,7 +45,7 @@ public class RankingDetailIndexerDto
     public string DappId { get; set; }
     public string PointsName { get; set; }
     public string ActionName { get; set; }
-    public decimal Amount { get; set; }
+    public string Amount { get; set; }
     public string SymbolName { get; set; }
 
     public DateTime CreateTime { get; set; }
